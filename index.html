@@ -4,101 +4,107 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Surebet kalkulačka | Surebety.blog</title>
-<meta name="description" content="Bezplatná surebet kalkulačka na výpočet rozloženia vkladov pri športových arbitrážach na 2 alebo 3 výsledky.">
+<meta name="description" content="Bezplatná surebet kalkulačka – vpíš vklad na jednu stranu a ostatné vklady sa dopočítajú. Podpora provízie burzy, 2–4 výsledkov a zaokrúhľovania.">
 <style>
   :root{
-    --bg:#f6f7f9; --card:#fff; --text:#1d2530; --muted:#6b7684; --line:#e1e5ea;
-    --accent:#1f6feb; --ok:#1a7f37; --ok-bg:#e8f6ec; --bad:#c62828; --bad-bg:#fdecec;
+    --bg:#f6f7f9; --card:#fff; --text:#1d2530; --muted:#6b7684; --line:#e1e5ea; --field:#f6f7f9;
+    --accent:#1f6feb; --ok:#1a7f37; --ok-bg:#e8f6ec; --bad:#c62828; --bad-bg:#fdecec; --sel:#eef4ff;
   }
   @media (prefers-color-scheme: dark){
-    :root{ --bg:#14171c; --card:#1d2229; --text:#e6e9ee; --muted:#9aa4b1; --line:#323a45;
-      --accent:#5b9dff; --ok:#4cc26b; --ok-bg:#16301f; --bad:#ff6b6b; --bad-bg:#3a1c1c; }
+    :root{ --bg:#14171c; --card:#1d2229; --text:#e6e9ee; --muted:#9aa4b1; --line:#323a45; --field:#14171c;
+      --accent:#5b9dff; --ok:#4cc26b; --ok-bg:#16301f; --bad:#ff6b6b; --bad-bg:#3a1c1c; --sel:#1c2a40; }
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);
     font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
-  .wrap{max-width:560px;margin:0 auto;padding:24px 16px 40px}
+  .wrap{max-width:720px;margin:0 auto;padding:24px 16px 40px}
   h1{font-size:1.5rem;margin:0 0 4px}
-  .sub{color:var(--muted);margin:0 0 20px;font-size:.95rem}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
-  .seg{display:flex;gap:6px;margin-bottom:16px}
-  .seg button{flex:1;padding:10px;border:1px solid var(--line);background:transparent;color:var(--text);
-    border-radius:8px;font-size:.95rem;cursor:pointer}
-  .seg button.on{background:var(--accent);border-color:var(--accent);color:#fff}
-  label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:4px}
-  input,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;
-    background:var(--bg);color:var(--text);font-size:1rem}
-  input:focus,select:focus{outline:2px solid var(--accent);outline-offset:-1px}
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-  .odds{display:grid;gap:12px;margin-bottom:12px}
-  .odds.n2{grid-template-columns:1fr 1fr}
-  .odds.n3{grid-template-columns:1fr 1fr 1fr}
-  .status{border-radius:10px;padding:14px;text-align:center;font-weight:600;margin-bottom:14px}
+  .sub{color:var(--muted);margin:0 0 18px;font-size:.95rem}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:16px}
+  .status{border-radius:10px;padding:12px;text-align:center;font-weight:600;margin-bottom:12px}
   .status.ok{background:var(--ok-bg);color:var(--ok)}
   .status.bad{background:var(--bad-bg);color:var(--bad)}
-  .status.none{background:var(--bg);color:var(--muted);font-weight:400}
-  .status .big{font-size:1.6rem;display:block}
-  table{width:100%;border-collapse:collapse;font-size:.95rem}
-  th,td{padding:8px 6px;text-align:right;border-bottom:1px solid var(--line)}
-  th:first-child,td:first-child{text-align:left}
-  th{color:var(--muted);font-weight:500;font-size:.8rem;text-transform:uppercase;letter-spacing:.03em}
-  tfoot td{font-weight:600;border-bottom:none}
+  .status.none{background:var(--field);color:var(--muted);font-weight:400}
+  .status .big{font-size:1.5rem;margin-right:8px}
+  .head,.row,.totrow{display:grid;grid-template-columns:28px 1fr 64px 1.2fr 28px 1.1fr 28px;gap:8px;align-items:center}
+  .head{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;padding:0 6px 6px}
+  .row{padding:8px 6px;border-radius:10px;border:1px solid transparent;margin-bottom:6px}
+  .row.fixed{background:var(--sel);border-color:var(--accent)}
+  .idx{font-weight:600;color:var(--muted);text-align:center}
+  input[type=text]{width:100%;padding:9px 8px;border:1px solid var(--line);border-radius:8px;
+    background:var(--field);color:var(--text);font-size:1rem;min-width:0}
+  input[type=text]:focus{outline:2px solid var(--accent);outline-offset:-1px}
+  input[type=radio]{width:18px;height:18px;accent-color:var(--accent);margin:0 auto;display:block;cursor:pointer}
+  .eff{font-size:.75rem;color:var(--muted);margin-top:2px;min-height:1em}
+  .res{font-size:.85rem;text-align:right;line-height:1.3}
+  .res .p{font-weight:600}
   .pos{color:var(--ok)} .neg{color:var(--bad)}
-  .note{font-size:.85rem;color:var(--muted);margin:12px 0 0}
+  .del{border:none;background:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:0}
+  .del:disabled{visibility:hidden}
+  .totrow{padding:10px 6px 0;border-top:1px solid var(--line);margin-top:4px}
+  .totrow .lbl{grid-column:2 / 4;text-align:right;font-weight:600}
+  .tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-top:12px}
+  .tools label{font-size:.85rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .tools select{padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--text);font-size:.95rem}
+  .btn{padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--text);cursor:pointer;font-size:.9rem}
+  .btn:hover{border-color:var(--accent)}
+  .help{font-size:.85rem;color:var(--muted);margin:0}
+  .help li{margin-bottom:4px}
   .foot{font-size:.85rem;color:var(--muted);text-align:center}
   .foot a{color:var(--accent)}
-  .hidden{display:none}
+  @media (max-width:520px){
+    .head{display:none}
+    .row,.totrow{grid-template-columns:22px 1fr 52px 1.2fr 24px;row-gap:6px}
+    .row .res{grid-column:2 / 5;text-align:left;display:flex;gap:10px}
+    .row .del{grid-column:5;grid-row:2}
+    .totrow .lbl{grid-column:2 / 4}
+    .totrow .res{grid-column:2 / 6;text-align:left}
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Surebet kalkulačka</h1>
-  <p class="sub">Zadaj kurzy a vklad – kalkulačka rozloží stávky tak, aby si mal rovnaký zisk pri každom výsledku.</p>
+  <p class="sub">Vpíš kurzy a potom vklad na stranu, ktorú chceš podať – ostatné vklady sa dopočítajú samé.</p>
 
   <div class="card">
-    <div class="seg" id="ways">
-      <button type="button" data-n="2" class="on">2 výsledky</button>
-      <button type="button" data-n="3">3 výsledky</button>
+    <div class="status none" id="status">Zadaj kurzy</div>
+
+    <div class="head">
+      <div></div><div>Kurz</div><div>Provízia %</div><div>Vklad €</div><div title="Pevný vklad">●</div><div style="text-align:right">Zisk</div><div></div>
+    </div>
+    <div id="rows"></div>
+
+    <div class="totrow">
+      <div></div>
+      <div class="lbl">Celkom €</div>
+      <div><input type="text" id="total" inputmode="decimal" value="100" aria-label="Celkový vklad"></div>
+      <div><input type="radio" name="fix" id="fixTotal" value="total" checked aria-label="Pevný celkový vklad"></div>
+      <div class="res" id="totRes"></div>
+      <div></div>
     </div>
 
-    <div class="odds n2" id="oddsBox">
-      <div><label for="o1">Kurz 1</label><input id="o1" inputmode="decimal" placeholder="napr. 2,10"></div>
-      <div><label for="o2">Kurz 2</label><input id="o2" inputmode="decimal" placeholder="napr. 2,05"></div>
-      <div class="hidden" id="o3wrap"><label for="o3">Kurz 3</label><input id="o3" inputmode="decimal" placeholder="napr. 3,40"></div>
-    </div>
-
-    <div class="row">
-      <div>
-        <label for="mode">Zadávam</label>
-        <select id="mode">
-          <option value="total">Celkový vklad</option>
-          <option value="1">Vklad na výsledok 1</option>
-          <option value="2">Vklad na výsledok 2</option>
-          <option value="3" class="hidden" id="mode3">Vklad na výsledok 3</option>
+    <div class="tools">
+      <button type="button" class="btn" id="add">+ pridať výsledok</button>
+      <label>Zaokrúhliť na
+        <select id="round">
+          <option value="0.01">0,01 €</option>
+          <option value="1" selected>1 €</option>
+          <option value="5">5 €</option>
+          <option value="10">10 €</option>
         </select>
-      </div>
-      <div><label for="amount">Suma (€)</label><input id="amount" inputmode="decimal" value="100"></div>
-    </div>
-
-    <div>
-      <label for="round">Zaokrúhliť vklady</label>
-      <select id="round">
-        <option value="0.01">nezaokrúhľovať (centy)</option>
-        <option value="1" selected>na celé eurá</option>
-        <option value="5">na 5 €</option>
-        <option value="10">na 10 €</option>
-      </select>
+      </label>
+      <button type="button" class="btn" id="reset">Vymazať</button>
     </div>
   </div>
 
   <div class="card">
-    <div class="status none" id="status">Zadaj kurzy</div>
-    <table id="res" class="hidden">
-      <thead><tr><th>Výsledok</th><th>Vklad</th><th>Výplata</th><th>Zisk</th></tr></thead>
-      <tbody id="rows"></tbody>
-      <tfoot><tr><td>Spolu</td><td id="tot"></td><td></td><td></td></tr></tfoot>
-    </table>
-    <p class="note">Tip: prvú stávku podaj v kancelárii s nižším limitom alebo s kurzom, ktorý sa môže rýchlejšie zmeniť. Zaokrúhlené sumy pôsobia v kancelárii menej nápadne.</p>
+    <ul class="help">
+      <li><strong>Vklad na jednu stranu:</strong> vpíš sumu do riadku, kde chceš stávku podať (napr. kancelária s bonusom alebo nižším limitom). Gulička sa prepne na tento riadok a ostatné sa dopočítajú.</li>
+      <li><strong>Celkový vklad:</strong> vpíš sumu do poľa Celkom a vklady sa rozložia na všetky výsledky.</li>
+      <li><strong>Provízia:</strong> pri burzách (Betfair, Matchbook…) vpíš províziu zo zisku, napr. 3 – kalkulačka počíta so skutočným kurzom po provízii.</li>
+      <li>Kurzy môžeš písať s čiarkou aj bodkou.</li>
+    </ul>
   </div>
 
   <p class="foot">Viac o arbitrážach na <a href="https://surebety.blog/" target="_top">surebety.blog</a> · Stávkovanie len pre osoby staršie ako 18 rokov.</p>
@@ -106,75 +112,116 @@
 
 <script>
 (function(){
-  var n = 2;
+  var MAX = 4, rowsEl = document.getElementById('rows');
   var $ = function(id){ return document.getElementById(id); };
   var num = function(v){ v = String(v).replace(/\s/g,'').replace(',', '.'); var x = parseFloat(v); return isFinite(x) ? x : NaN; };
-  var eur = function(x){ return x.toLocaleString('sk-SK',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €'; };
+  var fmt = function(x, d){ return x.toLocaleString('sk-SK',{minimumFractionDigits:d,maximumFractionDigits:d}); };
+  var eur = function(x){ return fmt(x,2) + ' €'; };
 
-  document.querySelectorAll('#ways button').forEach(function(b){
-    b.addEventListener('click', function(){
-      n = +b.dataset.n;
-      document.querySelectorAll('#ways button').forEach(function(x){ x.classList.toggle('on', x === b); });
-      $('oddsBox').className = 'odds n' + n;
-      $('o3wrap').classList.toggle('hidden', n === 2);
-      $('mode3').classList.toggle('hidden', n === 2);
-      if (n === 2 && $('mode').value === '3') $('mode').value = 'total';
-      calc();
+  function addRow(){
+    var n = rowsEl.children.length;
+    if (n >= MAX) return;
+    var r = document.createElement('div');
+    r.className = 'row';
+    r.innerHTML =
+      '<div class="idx"></div>' +
+      '<div><input type="text" class="odd" inputmode="decimal" placeholder="kurz" aria-label="Kurz"><div class="eff"></div></div>' +
+      '<div><input type="text" class="com" inputmode="decimal" placeholder="0" aria-label="Provízia %"></div>' +
+      '<div><input type="text" class="stake" inputmode="decimal" aria-label="Vklad"></div>' +
+      '<div><input type="radio" name="fix" class="fix" aria-label="Pevný vklad"></div>' +
+      '<div class="res"></div>' +
+      '<div><button type="button" class="del" title="Odstrániť">×</button></div>';
+    rowsEl.appendChild(r);
+    r.querySelector('.odd').addEventListener('input', calc);
+    r.querySelector('.com').addEventListener('input', calc);
+    r.querySelector('.stake').addEventListener('input', function(){ r.querySelector('.fix').checked = true; calc(); });
+    r.querySelector('.stake').addEventListener('keydown', function(e){ if (e.key === 'Enter') { r.querySelector('.fix').checked = true; calc(); this.blur(); } });
+    r.querySelector('.fix').addEventListener('change', calc);
+    r.querySelector('.del').addEventListener('click', function(){
+      if (r.querySelector('.fix').checked) $('fixTotal').checked = true;
+      r.remove(); refresh(); calc();
     });
-  });
-  ['o1','o2','o3','amount','mode','round'].forEach(function(id){
-    $(id).addEventListener('input', calc); $(id).addEventListener('change', calc);
+    refresh();
+  }
+  function refresh(){
+    var rows = rowsEl.children;
+    for (var i = 0; i < rows.length; i++){
+      rows[i].querySelector('.idx').textContent = i + 1;
+      rows[i].querySelector('.del').disabled = rows.length <= 2;
+    }
+    $('add').disabled = rows.length >= MAX;
+  }
+
+  $('total').addEventListener('input', function(){ $('fixTotal').checked = true; calc(); });
+  $('total').addEventListener('keydown', function(e){ if (e.key === 'Enter') { $('fixTotal').checked = true; calc(); this.blur(); } });
+  $('fixTotal').addEventListener('change', calc);
+  $('round').addEventListener('change', calc);
+  $('add').addEventListener('click', function(){ addRow(); calc(); });
+  $('reset').addEventListener('click', function(){
+    rowsEl.innerHTML = ''; addRow(); addRow(); $('total').value = '100'; $('fixTotal').checked = true; calc();
   });
 
   function calc(){
-    var odds = [];
-    for (var i = 1; i <= n; i++){ odds.push(num($('o'+i).value)); }
-    var amount = num($('amount').value);
-    var st = $('status'), tbl = $('res');
+    var rows = Array.prototype.slice.call(rowsEl.children);
+    var st = $('status');
+    rows.forEach(function(r){ r.classList.toggle('fixed', r.querySelector('.fix').checked); });
 
-    if (odds.some(function(o){ return !(o > 1); })){
-      st.className = 'status none'; st.textContent = 'Zadaj kurzy (vyššie ako 1)'; tbl.classList.add('hidden'); return;
+    var data = rows.map(function(r){
+      var o = num(r.querySelector('.odd').value), c = num(r.querySelector('.com').value);
+      if (!(c >= 0)) c = 0;
+      var eff = o > 1 ? 1 + (o - 1) * (1 - c / 100) : NaN;
+      r.querySelector('.eff').textContent = (c > 0 && eff > 1) ? 'po provízii ' + fmt(eff, 3) : '';
+      return { r: r, eff: eff };
+    });
+
+    if (data.some(function(d){ return !(d.eff > 1); })){
+      st.className = 'status none'; st.textContent = 'Zadaj kurzy (vyššie ako 1)';
+      rows.forEach(function(r){ r.querySelector('.res').innerHTML = ''; });
+      $('totRes').innerHTML = '';
+      return;
     }
-    var inv = odds.reduce(function(s,o){ return s + 1/o; }, 0);
-    var margin = (1/inv - 1) * 100;
 
-    if (!(amount > 0)){
-      st.className = 'status none'; st.textContent = 'Zadaj sumu'; tbl.classList.add('hidden'); return;
-    }
-
-    var mode = $('mode').value, total;
-    if (mode === 'total') total = amount;
-    else total = amount * odds[+mode - 1] * inv;
-
+    var inv = data.reduce(function(s, d){ return s + 1 / d.eff; }, 0);
+    var margin = (1 / inv - 1) * 100;
     var step = num($('round').value);
-    var stakes = odds.map(function(o, idx){
-      if (mode !== 'total' && idx === +mode - 1) return amount;
-      var s = total / (o * inv);
-      return Math.round(s / step) * step;
-    });
-    var sum = stakes.reduce(function(a,b){ return a + b; }, 0);
+    var roundTo = function(x){ return Math.round(x / step) * step; };
 
-    var html = '';
-    stakes.forEach(function(s, idx){
-      var pay = s * odds[idx], profit = pay - sum;
-      html += '<tr><td>' + (idx+1) + ' <span style="color:var(--muted)">@ ' + odds[idx].toFixed(2).replace('.',',') + '</span></td>' +
-              '<td>' + eur(s) + '</td><td>' + eur(pay) + '</td>' +
-              '<td class="' + (profit >= 0 ? 'pos' : 'neg') + '">' + (profit >= 0 ? '+' : '') + eur(profit) + '</td></tr>';
-    });
-    $('rows').innerHTML = html;
-    $('tot').textContent = eur(sum);
-    tbl.classList.remove('hidden');
+    var fixedIdx = -1;
+    data.forEach(function(d, i){ if (d.r.querySelector('.fix').checked) fixedIdx = i; });
 
-    var pct = margin.toFixed(2).replace('.', ',');
-    if (margin > 0){
-      st.className = 'status ok';
-      st.innerHTML = '<span class="big">+' + pct + ' %</span>Je to surebet';
+    var stakes, total;
+    if (fixedIdx >= 0){
+      var fs = num(data[fixedIdx].r.querySelector('.stake').value);
+      if (!(fs > 0)){ st.className = 'status none'; st.textContent = 'Zadaj vklad'; return; }
+      var payout = fs * data[fixedIdx].eff;
+      stakes = data.map(function(d, i){ return i === fixedIdx ? fs : roundTo(payout / d.eff); });
+      total = stakes.reduce(function(a, b){ return a + b; }, 0);
+      $('total').value = fmt(total, 2).replace(/\s/g, '');
     } else {
-      st.className = 'status bad';
-      st.innerHTML = '<span class="big">' + pct + ' %</span>Nie je to surebet – pri týchto kurzoch by si stratil';
+      var T = num($('total').value);
+      if (!(T > 0)){ st.className = 'status none'; st.textContent = 'Zadaj celkový vklad'; return; }
+      stakes = data.map(function(d){ return roundTo(T / (d.eff * inv)); });
+      total = stakes.reduce(function(a, b){ return a + b; }, 0);
     }
+
+    var minP = Infinity;
+    data.forEach(function(d, i){
+      if (i !== fixedIdx) d.r.querySelector('.stake').value = fmt(stakes[i], step < 1 ? 2 : 0).replace(/\s/g, '');
+      var profit = stakes[i] * d.eff - total;
+      minP = Math.min(minP, profit);
+      var pct = total > 0 ? profit / total * 100 : 0;
+      d.r.querySelector('.res').innerHTML =
+        '<span class="p ' + (profit >= 0 ? 'pos' : 'neg') + '">' + (profit >= 0 ? '+' : '') + eur(profit) + '</span>' +
+        '<span class="' + (profit >= 0 ? 'pos' : 'neg') + '"> ' + (pct >= 0 ? '+' : '') + fmt(pct, 2) + ' %</span>';
+    });
+    $('totRes').innerHTML = 'min. zisk <span class="' + (minP >= 0 ? 'pos' : 'neg') + '">' + (minP >= 0 ? '+' : '') + eur(minP) + '</span>';
+
+    var pctTxt = (margin > 0 ? '+' : '') + fmt(margin, 2) + ' %';
+    if (margin > 0){ st.className = 'status ok'; st.innerHTML = '<span class="big">' + pctTxt + '</span>Je to surebet'; }
+    else { st.className = 'status bad'; st.innerHTML = '<span class="big">' + pctTxt + '</span>Nie je to surebet'; }
   }
-  calc();
+
+  addRow(); addRow(); calc();
 })();
 </script>
 </body>
