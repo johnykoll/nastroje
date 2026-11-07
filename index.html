@@ -35,7 +35,9 @@
     background:var(--field);color:var(--text);font-size:1rem;min-width:0}
   input[type=text]:focus{outline:2px solid var(--accent);outline-offset:-1px}
   input[type=radio]{width:18px;height:18px;accent-color:var(--accent);margin:0 auto;display:block;cursor:pointer}
-  .eff{font-size:.75rem;color:var(--muted);margin-top:2px;min-height:1em}
+  .oddcell{position:relative}
+  .eff{position:absolute;left:2px;top:100%;font-size:.7rem;color:var(--muted);white-space:nowrap;line-height:1.3}
+  .row.hascom{padding-bottom:20px}
   .res{font-size:.85rem;text-align:right;line-height:1.3}
   .res .p{font-weight:600}
   .pos{color:var(--ok)} .neg{color:var(--bad)}
@@ -71,7 +73,7 @@
     <div class="status none" id="status">Zadaj kurzy</div>
 
     <div class="head">
-      <div></div><div>Kurz</div><div>Provízia %</div><div>Vklad €</div><div title="Pevný vklad">●</div><div style="text-align:right">Zisk</div><div></div>
+      <div></div><div>Kurz</div><div>Prov. %</div><div>Vklad €</div><div title="Pevný vklad">●</div><div style="text-align:right">Zisk</div><div></div>
     </div>
     <div id="rows"></div>
 
@@ -125,7 +127,7 @@
     r.className = 'row';
     r.innerHTML =
       '<div class="idx"></div>' +
-      '<div><input type="text" class="odd" inputmode="decimal" placeholder="kurz" aria-label="Kurz"><div class="eff"></div></div>' +
+      '<div class="oddcell"><input type="text" class="odd" inputmode="decimal" placeholder="kurz" aria-label="Kurz"><div class="eff"></div></div>' +
       '<div><input type="text" class="com" inputmode="decimal" placeholder="0" aria-label="Provízia %"></div>' +
       '<div><input type="text" class="stake" inputmode="decimal" aria-label="Vklad"></div>' +
       '<div><input type="radio" name="fix" class="fix" aria-label="Pevný vklad"></div>' +
@@ -170,7 +172,9 @@
       var o = num(r.querySelector('.odd').value), c = num(r.querySelector('.com').value);
       if (!(c >= 0)) c = 0;
       var eff = o > 1 ? 1 + (o - 1) * (1 - c / 100) : NaN;
-      r.querySelector('.eff').textContent = (c > 0 && eff > 1) ? 'po provízii ' + fmt(eff, 3) : '';
+      var showEff = c > 0 && eff > 1;
+      r.querySelector('.eff').textContent = showEff ? 'po provízii ' + fmt(eff, 3) : '';
+      r.classList.toggle('hascom', showEff);
       return { r: r, eff: eff };
     });
 
