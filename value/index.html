@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0B1220">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Podať? – value bet kalkulačka | Surebety.blog</title>
+<meta name="description" content="Bezplatná value bet kalkulačka: hranica hodnoty, Kellyho vklad, arbitráž a AKO z kurzov soft a sharp kancelárie.">
+<style>
+:root{
+  --ground:#0B1220; --panel:#131C2E; --panel2:#1A2540; --rule:#24334D;
+  --text:#C7D3E6; --dim:#6B7C99; --bright:#F0F5FF;
+  --go:#3DD68C; --warn:#F2B441; --stop:#E5484D;
+  --mine:#7AA2F7;
+  --mono:ui-monospace,"SF Mono","Roboto Mono","DejaVu Sans Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{
+  background:var(--ground);color:var(--text);font-family:var(--sans);
+  padding:14px 14px calc(24px + env(safe-area-inset-bottom));
+  max-width:520px;margin:0 auto;font-size:15px;line-height:1.4;
+}
+.eyebrow{
+  font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--dim);font-weight:600;
+}
+header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+header h1{font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--bright)}
+
+/* režimy */
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:14px}
+.modes button{
+  background:var(--panel);border:1px solid var(--rule);color:var(--dim);
+  font-family:var(--sans);font-size:11px;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;padding:9px 4px;border-radius:7px;cursor:pointer;
+}
+.modes button[aria-pressed="true"]{background:var(--panel2);color:var(--bright);border-color:#3A4E75}
+
+/* vstupy */
+.grid{display:grid;gap:8px;margin-bottom:14px}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.f{background:var(--panel);border:1px solid var(--rule);border-radius:9px;padding:8px 10px}
+.f label{display:block;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);font-weight:600;margin-bottom:3px}
+.f input,.f select{
+  width:100%;background:none;border:none;color:var(--bright);
+  font-family:var(--mono);font-size:21px;font-weight:500;padding:0;
+  font-variant-numeric:tabular-nums;
+}
+.f input:focus,.f select:focus{outline:none}
+.f:focus-within{border-color:#4A63A0}
+.f select{font-size:16px;cursor:pointer}
+.f select option{background:var(--panel)}
+/* moja strana zápasu: soft kurz + sharp moja sú ten istý výsledok */
+.f.mine{
+  border-color:rgba(122,162,247,.45);
+  background:rgba(122,162,247,.08);
+  box-shadow:inset 3px 0 0 rgba(122,162,247,.7);
+}
+.f.mine label{color:var(--mine)}
+.f.mine:focus-within{border-color:#7AA2F7}
+/* protistrana: rovnaký rytmus, ale neutrálna sivá */
+.f.opp{box-shadow:inset 3px 0 0 rgba(107,124,153,.6)}
+.hint{
+  font-size:10.5px;color:var(--dim);line-height:1.45;
+  margin:-8px 0 13px;letter-spacing:.02em;
+}
+.hint b{font-weight:600}
+.sw-mine{color:var(--mine)}
+/* pole s vypočítanou sumou — nie vstup */
+.f.out{border-color:rgba(61,214,140,.45);background:rgba(61,214,140,.07)}
+.f.out label{color:var(--go)}
+.f.out .out-val{
+  font-family:var(--mono);font-size:21px;font-weight:600;color:var(--go);
+  font-variant-numeric:tabular-nums;line-height:1.25;
+}
+/* v arbitráži nie je moja strana sharpu potrebná */
+.f.opt label::after{content:" · voliteľné";color:var(--dim);font-weight:600}
+/* pole dopočítané z marže */
+.f.calcd{border-color:rgba(61,214,140,.45)!important;background:rgba(61,214,140,.07);box-shadow:inset 3px 0 0 rgba(61,214,140,.6);border-style:solid}
+.f.calcd label{color:var(--go)!important}
+.f.calcd label::after{content:" · z marže"}
+.f.calcd input::placeholder{color:var(--go);opacity:.9}
+
+/* prahová stupnica – signature */
+.scale{background:var(--panel);border:1px solid var(--rule);border-radius:9px;padding:13px 12px 10px;margin-bottom:12px}
+.scale-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:11px}
+.scale-head .val{font-family:var(--mono);font-size:14px;color:var(--bright);font-variant-numeric:tabular-nums}
+.track{position:relative;height:34px}
+.track .line{position:absolute;left:0;right:0;top:17px;height:2px;background:var(--rule)}
+.track .fill{position:absolute;top:17px;height:2px;background:currentColor;transition:all .18s ease}
+.track .thresh{position:absolute;top:5px;width:2px;height:26px;background:var(--dim)}
+.track .thresh::after{
+  content:attr(data-l);position:absolute;top:-11px;left:50%;transform:translateX(-50%);
+  font-size:8.5px;letter-spacing:.1em;color:var(--dim);white-space:nowrap;font-weight:600;
+}
+.track .mark{
+  position:absolute;top:8px;width:14px;height:14px;border-radius:50%;
+  border:3px solid var(--ground);background:currentColor;
+  transform:translateX(-50%);transition:left .18s ease;
+}
+.track .mark::after{
+  content:attr(data-l);position:absolute;top:16px;left:50%;transform:translateX(-50%);
+  font-family:var(--mono);font-size:11px;color:var(--bright);white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+
+/* verdikt */
+.verdict{border-radius:11px;padding:15px 16px;margin-bottom:12px;border:1px solid;transition:.18s}
+.verdict .v-label{font-size:19px;font-weight:700;letter-spacing:-.01em;line-height:1.2}
+.verdict .v-sub{font-size:12.5px;color:var(--dim);margin-top:3px}
+.verdict .v-num{
+  font-family:var(--mono);font-size:40px;font-weight:600;letter-spacing:-.03em;
+  margin-top:9px;color:var(--bright);font-variant-numeric:tabular-nums;line-height:1;
+}
+.verdict .v-numsub{font-size:11px;color:var(--dim);margin-top:5px;letter-spacing:.04em}
+.go{background:rgba(61,214,140,.09);border-color:rgba(61,214,140,.35)}
+.go .v-label{color:var(--go)}
+.stop{background:rgba(229,72,77,.09);border-color:rgba(229,72,77,.35)}
+.stop .v-label{color:var(--stop)}
+.warn{background:rgba(242,180,65,.09);border-color:rgba(242,180,65,.35)}
+.warn .v-label{color:var(--warn)}
+
+/* detaily */
+.rows{background:var(--panel);border:1px solid var(--rule);border-radius:9px;overflow:hidden}
+.row{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-top:1px solid var(--rule);font-size:12.5px}
+.row:first-child{border-top:none}
+.row span:first-child{color:var(--dim)}
+.row span:last-child{font-family:var(--mono);color:var(--bright);font-variant-numeric:tabular-nums;font-size:13.5px}
+.row.flag span:last-child{color:var(--warn)}
+
+.tipbox{
+  background:rgba(242,180,65,.07);border:1px solid rgba(242,180,65,.3);
+  border-radius:10px;padding:11px 13px;margin-bottom:12px;
+}
+.tipbox p{font-size:13px;line-height:1.5;color:var(--text);margin-top:5px}
+.tipbox table{width:100%;border-collapse:collapse;margin-top:9px;font-size:12.5px}
+.tipbox td{padding:5px 0;border-top:1px solid rgba(242,180,65,.18)}
+.tipbox td:first-child{color:var(--dim)}
+.tipbox td:last-child{text-align:right;font-family:var(--mono);color:var(--bright);font-variant-numeric:tabular-nums}
+details{margin-top:12px}
+summary{
+  font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);
+  cursor:pointer;padding:7px 0;font-weight:600;list-style:none;
+}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"▸ ";display:inline-block;transition:transform .15s}
+details[open] summary::before{transform:rotate(90deg)}
+.note{font-size:11.5px;color:var(--dim);line-height:1.55;margin-top:8px}
+.note code{font-family:var(--mono);color:var(--text);font-size:11.5px}
+.ghostbtn{
+  display:block;background:none;border:none;color:var(--dim);
+  font-family:var(--sans);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  font-weight:600;padding:0 0 12px;margin-top:-4px;cursor:pointer;
+}
+.ghostbtn:hover{color:var(--text)}
+.hidden{display:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Podať?</h1>
+  <span class="eyebrow" id="modeName">Value</span>
+</header>
+
+<div class="modes" role="group">
+  <button id="mValue" aria-pressed="true">Value</button>
+  <button id="mArb" aria-pressed="false">Arbitráž</button>
+  <button id="mAko" aria-pressed="false">AKO</button>
+</div>
+
+<div class="grid g3" id="mainRow">
+  <div class="f mine"><label>Soft kurz</label><input id="R" type="text" inputmode="decimal" placeholder="2,03"></div>
+  <div class="f mine" id="uCell"><label>Sharp moja</label><input id="U" type="text" inputmode="decimal" placeholder="1,79"></div>
+  <div class="f opp"><label>Sharp proti</label><input id="T" type="text" inputmode="decimal" placeholder="2,09"></div>
+</div>
+
+<p class="hint"><b class="sw-mine">Modré</b> = tvoja strana, ten istý výsledok u soft aj sharp knihy&nbsp;· <b>sivé</b> = opačný výsledok u sharpu</p>
+
+<div class="grid g2" id="marzaRow">
+  <div class="f"><label>Marža sharpu %</label><input id="marzaIn" type="text" inputmode="decimal" placeholder="—"></div>
+  <div class="f"><label>Kniha</label>
+    <select id="kniha">
+      <option value="">Vlastná / vypnuté</option>
+      <option value="2,5">Pinnacle — 2,5 %</option>
+      <option value="2">Sharp — 2 %</option>
+      <option value="3">Sharp — 3 %</option>
+      <option value="0">Polymarket — 0 %</option>
+    </select>
+  </div>
+</div>
+
+<div class="grid g3" id="leg2Row" style="display:none">
+  <div class="f mine"><label>2. noha kurz</label><input id="R2" type="text" inputmode="decimal" placeholder="—"></div>
+  <div class="f mine"><label>2. noha sharp moja</label><input id="U2" type="text" inputmode="decimal" placeholder="—"></div>
+  <div class="f opp"><label>2. noha sharp proti</label><input id="T2" type="text" inputmode="decimal" placeholder="—"></div>
+</div>
+
+<div class="grid g3" id="leg3Row" style="display:none">
+  <div class="f mine"><label>3. noha kurz</label><input id="R3" type="text" inputmode="decimal" placeholder="—"></div>
+  <div class="f mine"><label>3. noha sharp moja</label><input id="U3" type="text" inputmode="decimal" placeholder="—"></div>
+  <div class="f opp"><label>3. noha sharp proti</label><input id="T3" type="text" inputmode="decimal" placeholder="—"></div>
+</div>
+
+<div class="grid g2" id="arbRow" style="display:none">
+  <div class="f"><label>Soft vklad €</label><input id="arbStake" type="text" inputmode="decimal" value="200"></div>
+  <div class="f out"><label>Vlož na sharp</label><div class="out-val" id="sharpOut">—</div></div>
+</div>
+
+
+<button class="ghostbtn hidden" id="advBtn"></button>
+<div class="scale" id="scaleBox">
+  <div class="scale-head">
+    <span class="eyebrow">Hranica hodnoty</span>
+    <span class="val" id="threshVal">—</span>
+  </div>
+  <div class="track" id="track">
+    <div class="line"></div>
+    <div class="fill" id="fill"></div>
+    <div class="thresh" id="thresh" data-l="HRANICA"></div>
+    <div class="mark" id="mark" data-l=""></div>
+  </div>
+</div>
+
+<div class="verdict warn" id="verdict">
+  <div class="v-label" id="vLabel">Zadaj kurzy</div>
+  <div class="v-sub" id="vSub">Soft kurz a obe strany sharpu</div>
+  <div class="v-num hidden" id="vNum">—</div>
+  <div class="v-numsub hidden" id="vNumSub"></div>
+</div>
+
+<div class="tipbox" id="tipBox" style="display:none"><span class="eyebrow" id="tipHead">Skús namiesto toho</span><p id="tip"></p><div id="tipTable"></div></div>
+
+<div class="rows" id="rows"></div>
+
+<details>
+  <summary>Nastavenia</summary>
+  <div class="grid g3" style="margin-top:8px">
+    <div class="f"><label>Bankroll €</label><input id="bank" type="text" inputmode="decimal" value="1000"></div>
+    <div class="f"><label>Kelly ×</label><input id="mult" type="text" inputmode="decimal" value="0,25"></div>
+    <div class="f"><label>Už v zápase €</label><input id="held" type="text" inputmode="decimal" placeholder="0"></div>
+  </div>
+  <p class="note">
+    Nastavenia sa ukladajú do adresy stránky. Ulož si ju na plochu telefónu aj s nimi.
+  </p>
+</details>
+
+<details>
+  <summary>Ako to počíta</summary>
+  <p class="note">
+    Férová šanca tvojej strany je <code>T / (T + U)</code>. Hranica, nad ktorou má stávka hodnotu,
+    je <code>1 + U/T</code> — to sa dá spočítať aj z hlavy.<br><br>
+    <code>PA = T/(T+U) − 1/R</code> je pravdepodobnostná výhoda v percentuálnych bodoch.
+    <code>W = R × PA</code> je matematická výhoda. Vklad je Kellyho podiel
+    <code>W/(R−1)</code> vynásobený multiplikátorom a bankrollom.<br><br>
+    <b>Arbitráž potrebuje len dva kurzy</b> — soft kurz a sharp proti. Moja strana sharpu
+    do výpočtu istého zisku nevstupuje, treba ju len na PA, hranicu hodnoty a cenu hedžu.
+    Keď ju nezadáš, tie tri riadky sa vynechajú a zvyšok počíta normálne.<br><br>
+    Záporná arbitráž nie je chyba — je to kombinovaná marža oboch kníh, čiže presne to,
+    čo by ťa stálo, keby si sa aj tak zaistil. Kalkulačka ju vyčísli v eurách rovnako
+    ako kladnú, aby si videl, ako ďaleko od arbitráže si a či sa oplatí hedžovať aspoň čiastočne.<br><br>
+    Arbitráž vzniká až od kurzu <code>T/(T−1)</code>, čo je vždy vyššie než hranica hodnoty.
+    Medzera medzi tými dvoma je marža sharpu — to je presne cena, ktorú platíš za istotu.
+    Medzi hranicami má stávka hodnotu, ale zaistiť sa nedá.<br><br>
+    Marža sharpu mimo 0,1–10 % znamená zle odčítaný kurz. Vtedy sa nič nepodáva.<br><br>
+    <b>Dopočet z marže.</b> Ak vidíš len jednu stranu sharpu, druhá sa dá dorátať zo známej marže knihy:
+    <code>U = 1 / (1 + m − 1/T)</code>, kde <code>m</code> je marža v desatinnom tvare (2,5 % → 0,025).
+    Dopočítané pole zozelenie a hodnota sa ukáže ako náhľad — keď ju prepíšeš ručne, tvoja hodnota vyhráva.
+    Rovnako to funguje aj opačne, keď chýba strana proti.<br><br>
+    Z toho vzorca vyjde <code>p = 1 − 1 / (T × (1 + m))</code>, čiže proporcionálne odstránenie marže.
+    Platí len pre dvojcestný trh — pri 1X2 sa marža delí na tri strany a číslo bude zlé.
+    A pozor: skutočné knihy nedelia maržu rovnomerne, na outsiderov jej dávajú viac. Pri kurzoch nad ~4
+    ti proporcionálny dopočet nadhodnotí PA. Ber dopočítanú stranu ako odhad, nie ako odčítaný kurz —
+    ak sa marža mýli o pol percentuálneho bodu, hranica hodnoty sa posunie približne o toľko isto.
+  </p>
+</details>
+
+<p class="note" style="text-align:center;margin-top:18px">Návod a vysvetlenie value bettingu na <a href="https://surebety.blog/" style="color:var(--mine)">surebety.blog</a> · Stávkovanie len pre osoby staršie ako 18 rokov.</p>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var mode='value';
+  var arbAdv=false;   /* sharp moja v arbitráži — skrytá, kým si ju nevypýtaš */
+  var BTN_ON='+ Sharp moja · PA a cena hedžu', BTN_OFF='− Skryť sharp moja';
+  var MIN=[null,1.1,2,3,4,5,6,7,8,9,10];
+
+  function num(v){
+    if(v==null)return NaN;
+    v=String(v).replace(/\s|€/g,'').replace(',','.');
+    return v===''?NaN:parseFloat(v);
+  }
+  function eur(x){
+    return x.toLocaleString('sk-SK',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+  }
+  function pb(x){return (x>=0?'+':'')+(x*100).toFixed(2)+' pb'}
+  function pct(x){return (x*100).toFixed(2)+' %'}
+
+  /* stav v adrese, aby prežil uloženie na plochu */
+  function saveHash(){
+    var p=new URLSearchParams();
+    p.set('b',$('bank').value); p.set('k',$('mult').value); p.set('m',mode);
+    p.set('mz',$('marzaIn').value); p.set('a',arbAdv?'1':'0');
+    history.replaceState(null,'','#'+p.toString());
+  }
+  function loadHash(){
+    if(!location.hash)return;
+    var p=new URLSearchParams(location.hash.slice(1));
+    if(p.get('b'))$('bank').value=p.get('b');
+    if(p.get('k'))$('mult').value=p.get('k');
+    if(p.get('mz'))$('marzaIn').value=p.get('mz');
+    if(p.get('a')==='1')arbAdv=true;
+    if(p.get('m'))setMode(p.get('m')==='pyr'?'value':p.get('m'),true);
+  }
+
+  function setMode(m,quiet){
+    mode=m;
+    $('mValue').setAttribute('aria-pressed',m==='value');
+    $('mArb').setAttribute('aria-pressed',m==='arb');
+    $('mAko').setAttribute('aria-pressed',m==='ako');
+    $('modeName').textContent={value:'Value',arb:'Arbitráž',ako:'AKO'}[m];
+    $('leg2Row').style.display=(m==='ako')?'grid':'none';
+    $('leg3Row').style.display=(m==='ako')?'grid':'none';
+    if(m!=='ako')$('tipBox').style.display='none';
+    $('arbRow').style.display=m==='arb'?'grid':'none';
+    applyAdv();
+    if(!quiet)saveHash();
+    calc();
+  }
+
+  function applyAdv(){
+    var hide=(mode==='arb'&&!arbAdv);
+    $('uCell').style.display=hide?'none':'';
+    $('mainRow').classList.toggle('g2',hide);
+    $('mainRow').classList.toggle('g3',!hide);
+    $('advBtn').classList.toggle('hidden',mode!=='arb');
+    $('advBtn').textContent=arbAdv?BTN_OFF:BTN_ON;
+  }
+
+  function verdict(cls,label,sub,big,bigsub){
+    $('verdict').className='verdict '+cls;
+    $('vLabel').textContent=label;
+    $('vSub').textContent=sub;
+    $('vNum').classList.toggle('hidden',!big);
+    $('vNumSub').classList.toggle('hidden',!bigsub);
+    if(big)$('vNum').textContent=big;
+    if(bigsub)$('vNumSub').textContent=bigsub;
+  }
+  function rows(list){
+    $('rows').innerHTML=list.map(function(r){
+      return '<div class="row'+(r[2]?' flag':'')+'"><span>'+r[0]+'</span><span>'+r[1]+'</span></div>';
+    }).join('');
+  }
+
+  /* stupnica: hranica v strede, tvoj kurz ako značka */
+  function drawScale(thresh,actual,color,label){
+    var box=$('scaleBox');
+    if(!isFinite(thresh)){box.style.opacity=.35;$('threshVal').textContent='—';
+      $('mark').style.left='50%';$('mark').setAttribute('data-l','');
+      $('fill').style.width='0';$('thresh').style.left='50%';return;}
+    box.style.opacity=1;
+    $('threshVal').textContent=label+' '+thresh.toFixed(3);
+    var lo=thresh*0.75, hi=thresh*1.35;
+    var tp=(thresh-lo)/(hi-lo)*100;
+    $('thresh').style.left=tp+'%';
+    if(!isFinite(actual)){$('mark').style.left=tp+'%';$('mark').setAttribute('data-l','');$('fill').style.width='0';return;}
+    var ap=Math.max(2,Math.min(98,(actual-lo)/(hi-lo)*100));
+    $('mark').style.left=ap+'%';
+    $('mark').setAttribute('data-l',actual.toFixed(3));
+    $('track').style.color=color;
+    var a=Math.min(tp,ap), b=Math.max(tp,ap);
+    $('fill').style.left=a+'%'; $('fill').style.width=(b-a)+'%';
+  }
+
+  /* ---- dopočet chýbajúcej strany sharpu z marže knihy ----
+     marža m = 1/T + 1/U − 1  →  U = 1 / (1 + m − 1/T)
+     dôsledok: p = 1 / (T × (1+m)) — proporcionálne odstránenie marže */
+  var PH={};
+  ['U','T','U2','T2','U3','T3'].forEach(function(id){PH[id]=$(id).placeholder;});
+
+  function marzaVal(){
+    var m=num($('marzaIn').value);
+    return (isFinite(m)&&m>=0&&m<50)?m/100:NaN;
+  }
+
+  function paruj(u,t,m){
+    var res={U:u,T:t,dU:false,dT:false,err:null};
+    var okU=isFinite(u)&&u>1, okT=isFinite(t)&&t>1;
+    if(okU&&okT) return res;
+    if(!isFinite(m)) return res;
+    var strop=m>0?(1/m):Infinity;
+    if(okT&&!okU){
+      var iu=1+m-1/t;
+      if(iu<=0||1/iu<=1){res.U=NaN;res.err='Pri marži '+pct(m)+' sa dá dopočítať len kurz proti pod '+(isFinite(strop)?strop.toFixed(2):'∞');return res;}
+      res.U=1/iu; res.dU=true;
+    }else if(okU&&!okT){
+      var it=1+m-1/u;
+      if(it<=0||1/it<=1){res.T=NaN;res.err='Pri marži '+pct(m)+' sa dá dopočítať len kurz moja pod '+(isFinite(strop)?strop.toFixed(2):'∞');return res;}
+      res.T=1/it; res.dT=true;
+    }
+    return res;
+  }
+
+  function ghost(id,val,der){
+    var el=$(id); if(!el)return;
+    el.parentNode.classList.toggle('calcd',!!der);
+    el.placeholder = der ? val.toFixed(3).replace('.',',') : PH[id];
+  }
+
+  /* nemožná marža = zle odčítaný kurz. Ak je jedna strana dopočítaná z marže,
+     marža je vstup, nie odčet — nula je vtedy legitímna (burza, Polymarket). */
+  function zlaM(m,der){
+    if(!isFinite(m)) return false;
+    return der ? (m>0.10) : (m<0.001||m>0.10);
+  }
+
+  function leg(ids,m,skipU){
+    var r=num($(ids[0]).value);
+    if(skipU){                       /* moja strana sa ignoruje aj keď v nej ostala hodnota */
+      var tOnly=num($(ids[2]).value);
+      ghost(ids[1],NaN,false); ghost(ids[2],tOnly,false);
+      return {R:r,U:NaN,T:tOnly,dU:false,dT:false,err:null};
+    }
+    var res=paruj(num($(ids[1]).value),num($(ids[2]).value),m);
+    ghost(ids[1],res.U,res.dU); ghost(ids[2],res.T,res.dT);
+    return {R:r,U:res.U,T:res.T,dU:res.dU,dT:res.dT,err:res.err};
+  }
+
+  /* upozornenie, že jedna strana nie je odčítaná, ale odhadnutá */
+  function dopocetNota(der,g,U,T,marza){
+    if(!der){$('tipBox').style.display='none';return;}
+    $('tipHead').textContent='Dopočítaný kurz';
+    $('tip').textContent='Sharp '+(g.dU?'moja ':'proti ')+(g.dU?U:T).toFixed(3)+
+      ' nie je odčítaná z knihy — vyrátala sa z marže '+pct(marza)+
+      '. PA aj výška vkladu stoja na tom odhade: ak je skutočná marža o pol bodu inde, hranica hodnoty sa posunie o toľko isto. '+
+      (marza<0.001?'Nulová marža znamená, že celý kurz berieš ako férovú cenu — sedí to na burzu či Polymarket, na klasickú knihu nie.':'');
+    $('tipTable').innerHTML='';
+    $('tipBox').style.display='block';
+  }
+
+  function calc(){
+    var mz=marzaVal();
+    $('tipHead').textContent='Skús namiesto toho';
+    var hideU=(mode==='arb'&&!arbAdv);
+    var g1=leg(['R','U','T'],mz,hideU);
+    var R=g1.R, U=g1.U, T=g1.T, der1=g1.dU||g1.dT;
+    $('U').parentNode.classList.toggle('opt', mode==='arb' && !g1.dU);
+    var B=num($('bank').value), k=num($('mult').value);
+
+    /* ---- AKO: value nohy v jednom tikete ---- */
+    if(mode==='ako'){
+      var Ls=[], src=[['R','U','T'],['R2','U2','T2'],['R3','U3','T3']];
+      for(var i=0;i<3;i++){
+        var gL=leg(src[i],mz), r=gL.R, u=gL.U, t=gL.T;
+        if(isFinite(r)&&r>1&&isFinite(u)&&u>1&&isFinite(t)&&t>1){
+          var pp=t/(t+u);
+          Ls.push({R:r,p:pp,PA:pp-1/r,W:r*pp-1,marza:1/t+1/u-1,der:gL.dU||gL.dT});
+        }
+      }
+      if(Ls.length<2){
+        drawScale(NaN,NaN);$('tipBox').style.display='none';
+        verdict('warn','Zadaj aspoň dve nohy','Každá noha potrebuje soft kurz a obe strany sharpu');rows([]);return;
+      }
+      var Rc=1,pc=1,zlaMarza=false,minPA=1;
+      Ls.forEach(function(l){Rc*=l.R;pc*=l.p;if(zlaM(l.marza,l.der))zlaMarza=true;minPA=Math.min(minPA,l.PA);});
+      var Wc=Rc*pc-1, PAc=pc-1/Rc, fc=Math.max(0,Wc/(Rc-1));
+      var vklAko=(isFinite(B)&&isFinite(k))?k*fc*B:NaN;
+      drawScale(1/pc,Rc,Wc>0?'var(--go)':'var(--stop)','Férová cena');
+
+      /* porovnanie: nohy zvlášť vs AKO, log rast */
+      function rast(R,p,st){var f=st/B;return (f<=0||f>=1)?0:B*(Math.exp(p*Math.log(1+f*(R-1))+(1-p)*Math.log(1-f))-1);}
+      var vklSep=0,rastSep=0;
+      Ls.forEach(function(l){var s=k*Math.max(0,l.W/(l.R-1))*B; vklSep+=s; rastSep+=rast(l.R,l.p,s);});
+      var rastAko=rast(Rc,pc,vklAko);
+
+      if(zlaMarza){
+        verdict('warn','Skontroluj kurzy','Niektorá noha má nemožnú maržu sharpu');
+      }else if(minPA<=0){
+        verdict('stop','Vyhoď zápornú nohu','Aspoň jedna noha nemá hodnotu — v kombinácii ju len znásobíš');
+      }else if(rastSep>rastAko*1.05){
+        verdict('warn','Radšej zvlášť','Nohy samostatne rastú o '+pct(rastSep/rastAko-1)+' viac',
+          eur(vklAko),'AKO by dalo len +'+eur(rastAko)+' oproti +'+eur(rastSep));
+      }else{
+        verdict('go','Podaj AKO','W '+pct(Wc)+' · kurz '+Rc.toFixed(3),
+          eur(vklAko),'očakávaný zisk +'+eur(vklAko*Wc));
+      }
+
+      $('tip').textContent='Nohy samostatne by potrebovali '+eur(vklSep)+' vkladu a priniesli +'+eur(rastSep)+
+        ' rastu. AKO potrebuje len '+eur(vklAko)+' a prinesie +'+eur(rastAko)+
+        '. Kombinácia je kapitálovo efektívnejšia ('+pct(rastAko/vklAko)+' na euro oproti '+
+        pct(rastSep/vklSep)+'), ale v absolútnom raste zaostáva. Oplatí sa teda vtedy, keď ťa brzdia limity knihy, nie kapitál.';
+      $('tipTable').innerHTML='';
+      $('tipBox').style.display='block';
+
+      var L=[['Počet nôh',String(Ls.length)],['Kurz kombinácie',Rc.toFixed(3)],
+             ['Férová cena kombinácie',(1/pc).toFixed(3)],
+             ['Šanca, že prejde',pct(pc)],
+             ['Mat. výhoda W',pct(Wc),Wc<=0],
+             ['PA kombinácie',pb(PAc),PAc<=0],
+             ['Plný Kellyho podiel',pct(fc)],
+             ['Vklad na AKO',eur(vklAko)],
+             ['Očakávaný zisk (EV)','+'+eur(vklAko*Wc)],
+             ['Log rast — AKO','+'+eur(rastAko)],
+             ['Log rast — nohy zvlášť','+'+eur(rastSep),rastSep>rastAko],
+             ['Vklad — nohy zvlášť',eur(vklSep)]];
+      Ls.forEach(function(l,i){L.push(['Noha '+(i+1)+': W / PA',pct(l.W)+' / '+pb(l.PA),l.PA<=0])});
+      rows(L); return;
+    }
+
+    /* ---- ARBITRÁŽ: stačia dva údaje — soft kurz a sharp proti ----
+       Moja strana sharpu do samotnej arbitráže nevstupuje; treba ju len
+       na PA, hranicu hodnoty a cenu hedžu. Bez nej sa tie riadky vynechajú. */
+    if(mode==='arb'){
+      if(!isFinite(R)||!isFinite(T)||R<=1||T<=1){
+        drawScale(NaN,NaN); $('tipBox').style.display='none'; $('sharpOut').textContent='—';
+        if(g1.err) verdict('warn','Marža nesedí ku kurzu',g1.err);
+        else verdict('warn','Zadaj kurzy','Stačí soft kurz a sharp proti');
+        rows([]);return;
+      }
+      var maU=isFinite(U)&&U>1;
+      var marzaA=maU?(1/T+1/U-1):NaN;
+      var rminA=maU?(1+U/T):NaN;
+      var paA=maU?(T/(T+U)-1/R):NaN;
+      var WA=maU?(R*paA):NaN;
+
+      var arb=1/(1/R+1/T)-1;
+      var rarb=T/(T-1);          /* od tohto soft kurzu vzniká arbitráž */
+      drawScale(rarb,R,arb>0?'var(--go)':'var(--stop)','Arb od');
+      var soft=num($('arbStake').value)||0;
+      var sharp=soft*R/T, celk=soft+sharp, zisk=celk*arb;
+      var znak=function(x){if(Math.abs(x)<0.005)x=0;return (x>=0?'+':'−')+eur(Math.abs(x))};
+      $('sharpOut').textContent=eur(sharp);
+      if(zlaM(marzaA,der1)){
+        verdict('warn', der1?'Skontroluj maržu':'Skontroluj kurzy',
+          der1?('Marža '+pct(marzaA)+' je na sharp knihu privysoká')
+              :('Marža sharpu '+pct(marzaA)+' je nemožná'));
+      }else if(arb<=0){
+        var nula=arb>-1e-9;
+        verdict(nula?'warn':'stop',
+          nula?'Presne na nule':'Istá strata '+pct(-arb),
+          'Treba soft kurz nad '+rarb.toFixed(3)+', máš '+R.toFixed(3)+
+            ' — chýba '+(rarb-R).toFixed(3),
+          znak(zisk),
+          'pri soft vklade '+eur(soft)+' · viazané '+eur(celk));
+      }else{
+        verdict('go','Arbitráž '+pct(arb),'Zaručený zisk nech dopadne zápas akokoľvek',
+          znak(zisk),
+          'pri soft vklade '+eur(soft)+' · viazané '+eur(celk));
+      }
+      var LA=[];
+      if(maU)LA.push([der1?'Marža sharpu (zadaná)':'Marža sharpu',pct(marzaA),zlaM(marzaA,der1)]);
+      if(g1.dU)LA.push(['Sharp moja — dopočítaná',U.toFixed(3)]);
+      if(g1.dT)LA.push(['Sharp proti — dopočítaná',T.toFixed(3)]);
+      LA.push(['Hranica arbitráže',rarb.toFixed(3)]);
+      if(maU)LA.push(['Hranica hodnoty (PA = 0)',rminA.toFixed(3)]);
+      LA.push(['Arbitráž',pct(arb),arb<=0],
+              ['Kombinovaná marža',pct(1/R+1/T-1),arb<=0],
+              ['Celkom viazané',eur(celk)],
+              ['Výplata (obe strany rovnako)',eur(soft*R)],
+              [arb>0?'Zaručený zisk':'Zaručená strata',znak(zisk),arb<=0],
+              ['Výnos na soft vklad',pct(soft>0?zisk/soft:0),arb<=0]);
+      if(arb<=0)LA.push(['Chýba do arbitráže','+'+(rarb-R).toFixed(3)+' na softe',true]);
+      if(maU){
+        LA.push(['PA (hodnota soft strany)',pb(paA),paA<0],
+                ['EV bez hedžu',(soft*WA>=0?'+':'')+eur(soft*WA)],
+                ['Cena hedžu',(soft*WA-zisk>=0?'−':'+')+eur(Math.abs(soft*WA-zisk))]);
+      }else if(!hideU){
+        LA.push(['PA a cena hedžu','doplň sharp moja']);
+      }
+      rows(LA);
+      dopocetNota(der1,g1,U,T,marzaA);
+      return;
+    }
+
+    if(!isFinite(R)||!isFinite(U)||!isFinite(T)||R<=1||U<=1||T<=1){
+      drawScale(NaN,NaN);
+      if(g1.err) verdict('warn','Marža nesedí ku kurzu',g1.err);
+      else verdict('warn','Zadaj kurzy','Soft kurz a obe strany sharpu — alebo jedna strana + marža');
+      rows([]);return;
+    }
+
+    var marza=1/T+1/U-1;
+    var p=T/(T+U);
+    var rmin=1+U/T;
+    var pa=p-1/R;
+    var W=R*pa;
+
+    /* ---- VALUE + KELLY ---- */
+    var col=pa>0?'var(--go)':'var(--stop)';
+    drawScale(rmin,R,col,'Hranica');
+
+    var held=num($('held').value)||0;
+    var f=Math.max(0,W/(R-1));
+    var celkovy=(isFinite(B)&&isFinite(k))?k*f*B:NaN;
+    var dopln=Math.max(0,celkovy-held);
+
+    /* očakávaný zisk z tejto stávky a rast bankrollu */
+    var ev=NaN, rast=NaN;
+    if(isFinite(dopln)&&dopln>0){
+      ev=dopln*W;
+      var fr=dopln/B;
+      if(fr<1){
+        var g=p*Math.log(1+fr*(R-1))+(1-p)*Math.log(1-fr);
+        rast=B*(Math.exp(g)-1);
+      }
+    }
+
+    var L=[[der1?'Marža sharpu (zadaná)':'Marža sharpu',pct(marza),zlaM(marza,der1)]];
+    if(g1.dU)L.push(['Sharp moja — dopočítaná',U.toFixed(3)]);
+    if(g1.dT)L.push(['Sharp proti — dopočítaná',T.toFixed(3)]);
+    L.push(['Férová šanca',pct(p)],
+           ['Hranica hodnoty',rmin.toFixed(3)],
+           ['PA',pb(pa),pa<=0],
+           ['Mat. výhoda W',pct(W),W<=0],
+           ['Plný Kellyho podiel',pct(f)]);
+    if(isFinite(ev)){
+      L.push(['Očakávaný zisk (EV)','+'+eur(ev)]);
+      if(isFinite(rast))L.push(['Rast bankrollu (log)','+'+eur(rast)]);
+      L.push(['Na 100 takých stávok','+'+eur(ev*100)]);
+    }
+    if(held>0)L.push(['Už v zápase',eur(held)]);
+    rows(L);
+    dopocetNota(der1,g1,U,T,marza);
+
+    if(zlaM(marza,der1)){
+      verdict('warn', der1?'Skontroluj maržu':'Skontroluj kurzy',
+        der1?('Marža '+pct(marza)+' je na sharp knihu privysoká')
+            :('Marža sharpu '+pct(marza)+' je nemožná — jeden kurz je zle odčítaný'));
+    }else if(pa<=0){
+      verdict('stop','Nepodávaj','Treba kurz nad '+rmin.toFixed(3)+', máš '+R.toFixed(3));
+    }else if(pa>0.15){
+      verdict('warn','Over kurzy','PA '+pb(pa)+' je nereálne vysoká — skôr chyba odčítania');
+    }else if(!isFinite(celkovy)){
+      verdict('go','Podaj','PA '+pb(pa)+' — doplň bankroll pre výšku vkladu');
+    }else if(dopln<celkovy*0.05){
+      verdict('warn','Rozpočet vyčerpaný','Na tento zápas už máš '+eur(held)+' z '+eur(celkovy));
+    }else{
+      verdict('go','Podaj', held>0?('Doplnenie do rozpočtu '+eur(celkovy)):('PA '+pb(pa)+' · W '+pct(W)),
+        eur(dopln), 'očakávaný zisk +'+eur(ev)+'  ·  Kelly ×'+k.toString().replace('.',','));
+    }
+  }
+
+  ['R','U','T','R2','U2','T2','R3','U3','T3','bank','mult','held','arbStake','marzaIn'].forEach(function(id){
+    $(id).addEventListener('input',function(){
+      if(id==='bank'||id==='mult'||id==='marzaIn')saveHash();
+      calc();
+    });
+  });
+  $('kniha').addEventListener('change',function(){
+    if(this.value!==''){$('marzaIn').value=this.value;}
+    saveHash(); calc();
+  });
+  $('mValue').onclick=function(){setMode('value')};
+  $('mArb').onclick=function(){setMode('arb')};
+  $('mAko').onclick=function(){setMode('ako')};
+
+  $('advBtn').onclick=function(){arbAdv=!arbAdv;applyAdv();saveHash();calc();};
+
+  loadHash();
+  applyAdv();
+  calc();
+})();
+</script>
+</body>
+</html>

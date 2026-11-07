@@ -1,0 +1,2645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Blackjack tréner – Perfect Play Advisor | Surebety.blog</title>
+<meta name="description" content="Tréningový nástroj na blackjack: optimálna stratégia, počítanie kariet Hi-Lo a Wong Halves, true count, Kellyho stávky a risk of ruin.">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
+
+:root {
+  --bg: #0c0c0e;
+  --felt: #0d1f12;
+  --surface: #131318;
+  --surface2: #1a1a22;
+  --border: #252530;
+  --border2: #32323f;
+  --text: #e2e2ee;
+  --muted: #5a5a70;
+  --dim: #3a3a4a;
+  --green: #00e87a;
+  --green2: #00a855;
+  --red: #ff4757;
+  --amber: #ffa502;
+  --blue: #5352ed;
+  --cyan: #00d2d3;
+  --purple: #a29bfe;
+  --mono: 'Space Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.logo {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green);
+  letter-spacing: .12em;
+}
+.logo span { color: var(--muted); font-weight: 400; }
+.header-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.hbtn {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--muted);
+  cursor: pointer;
+  letter-spacing: .06em;
+}
+.hbtn:hover { color: var(--text); border-color: var(--dim); }
+.hbtn.active { background: var(--green2); color: #000; border-color: var(--green2); font-weight: 700; }
+
+/* ── Deck tracker ── */
+#deck-section {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+}
+.section-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: .12em;
+  color: var(--muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.deck-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.rank-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 4px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  transition: background .1s, transform .08s, border-color .1s;
+  position: relative;
+  overflow: hidden;
+}
+.rank-dealer-zone {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 38%;
+  height: 38%;
+  min-width: 20px;
+  min-height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,176,32,0.10);
+  border-top: 1px solid rgba(255,176,32,0.35);
+  border-right: 1px solid rgba(255,176,32,0.35);
+  border-radius: 0 10px 0 7px;
+  color: var(--amber);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+  z-index: 2;
+  transition: background .08s, transform .06s;
+}
+.rank-dealer-zone:active { transform: scale(0.82); background: rgba(255,176,32,0.4); }
+.rank-btn.depleted .rank-dealer-zone { pointer-events: none; }
+.rank-btn.dealer-armed { border-color: var(--amber); box-shadow: inset 0 0 0 1px var(--amber); }
+#deck-grid.zone-right .rank-dealer-zone {
+  left: auto;
+  right: 0;
+  border-right: none;
+  border-left: 1px solid rgba(255,176,32,0.35);
+  border-radius: 10px 0 7px 0;
+}
+.zone-side-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0 6px;
+}
+.zone-side-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: .04em;
+}
+.zone-side-btn {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 4px 9px;
+  border-radius: 4px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--muted);
+  cursor: pointer;
+  touch-action: manipulation;
+  letter-spacing: .04em;
+}
+.zone-side-btn.on { background: #1a1200; color: var(--amber); border-color: var(--amber); }
+.rank-btn:active { transform: scale(0.93); background: var(--dim); }
+.rank-btn.depleted { opacity: 0.35; pointer-events: none; }
+.rank-btn.low { border-color: #92400e; }
+.rank-btn-label {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+.rank-btn-rem {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+.rank-btn-rem.normal { color: var(--green); }
+.rank-btn-rem.low    { color: var(--amber); }
+.rank-btn-rem.depleted { color: var(--red); }
+.rank-bar-wrap {
+  width: 80%;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+}
+.rank-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--green2);
+  transition: width .2s;
+}
+.rank-bar.low { background: #92400e; }
+.rank-bar.depleted { background: #7f1d1d; }
+.deck-undo-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  gap: 8px;
+}
+.deck-undo-btn {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: 1px solid #3f1212;
+  background: #1a0808;
+  color: #fca5a5;
+  cursor: pointer;
+  touch-action: manipulation;
+  letter-spacing: .04em;
+}
+.deck-undo-btn:active { transform: scale(0.96); }
+.deck-undo-btn:disabled { opacity: 0.3; pointer-events: none; }
+.last-dealt {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+.last-dealt b { color: var(--amber); }
+.dealt-history {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.dealt-history-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  margin-right: 2px;
+}
+.dealt-pill {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 5px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  line-height: 1;
+}
+.dealt-pill.newest {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+.dealt-pill.older {
+  opacity: 0.55;
+}
+.dealt-pill.dealer {
+  background: rgba(0, 210, 211, 0.16);
+  position: relative;
+}
+.dealt-pill.dealer::after {
+  content: 'D';
+  position: absolute;
+  top: -7px;
+  right: -5px;
+  background: var(--cyan);
+  color: #001318;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 4px;
+  line-height: 1.3;
+}
+.deck-stats {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--mono);
+}
+.deck-stats b { color: var(--text); }
+
+/* ── Live insurance strip (always visible, deck-driven) ── */
+.ins-live {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 9px 10px;
+  margin-top: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+}
+.ins-live-badge {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: .04em;
+  padding: 5px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.ins-live-badge.take { background: var(--amber); color: #1a0e00; }
+.ins-live-badge.skip { background: var(--dim); color: var(--muted); }
+.ins-live-stats {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.ins-live-stats b { color: var(--text); }
+.ins-live-empty {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--dim);
+  margin-top: 6px;
+}
+.history-export-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.history-count {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+}
+.history-export-btn {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 7px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.history-export-btn:active { transform: scale(0.97); }
+.dealer-tag-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 8px 0 10px;
+  flex-wrap: wrap;
+}
+.dealer-tag-btn {
+  font-family: var(--sans);
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 9px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--muted);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.dealer-tag-btn:active { transform: scale(0.97); }
+.dealer-tag-btn.armed {
+  background: var(--amber);
+  color: #1a0e00;
+  border-color: var(--amber);
+}
+.round-count {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+}
+.dealer-progress {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--amber);
+  margin: -4px 0 8px;
+  min-height: 14px;
+}
+
+/* ── Hand input ── */
+#hand-section {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+}
+.hand-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.hand-group { flex: 1; min-width: 140px; }
+.hand-group label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: .1em;
+  color: var(--muted);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 5px;
+}
+.card-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.csel {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 8px;
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+  background: var(--surface2);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .12s;
+  touch-action: manipulation;
+}
+.csel:hover { color: var(--text); border-color: var(--dim); }
+.csel.selected { background: var(--surface2); border-color: var(--cyan); color: var(--cyan); }
+.csel.selected-dealer { background: var(--surface2); border-color: var(--amber); color: var(--amber); }
+.csel.zero { opacity: 0.3; pointer-events: none; }
+
+.hand-display {
+  display: flex;
+  gap: 4px;
+  min-height: 36px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.hcard {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 5px 9px;
+  border-radius: 5px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+}
+.hcard .remove {
+  font-size: 9px;
+  color: var(--muted);
+  cursor: pointer;
+  margin-left: 2px;
+}
+.hcard .remove:hover { color: var(--red); }
+.hcard.dealer-card { border-color: #5c3d00; color: var(--amber); }
+.hand-total {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.hand-total b { color: var(--text); font-size: 14px; }
+.hand-total .soft { color: var(--purple); font-size: 10px; margin-left: 4px; }
+
+/* ── Profiles bar ── */
+#profile-bar {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 8px 14px; background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.prof-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: .06em; }
+.prof-select {
+  font-family: var(--mono); font-size: 11px; padding: 5px 8px; border-radius: 4px;
+  border: 1px solid var(--border2); background: var(--surface2); color: var(--text); cursor: pointer;
+}
+.prof-btn {
+  font-family: var(--mono); font-size: 10px; padding: 5px 10px; border-radius: 4px;
+  border: 1px solid var(--border2); background: var(--surface2); color: var(--muted);
+  cursor: pointer; touch-action: manipulation; letter-spacing: .04em;
+}
+.prof-btn:hover { color: var(--text); }
+.prof-btn.save { color: var(--amber); border-color: #5c3d00; }
+.prof-btn.load { color: var(--green); border-color: var(--green2); }
+.prof-status { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-left: auto; }
+.prof-status b { color: var(--green); font-weight: 700; }
+
+/* ── Rules bar ── */
+#rules-bar {
+  display: flex;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.rule-toggle {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 4px 9px;
+  border-radius: 4px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--muted);
+  cursor: pointer;
+  letter-spacing: .04em;
+}
+.rule-toggle.on { background: #0d1f12; color: var(--green); border-color: var(--green2); }
+
+/* ── Advice panel ── */
+#advice-panel {
+  padding: 14px;
+  flex: 1;
+}
+
+.advice-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.advice-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.advice-action {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+.advice-action.hit { color: var(--cyan); }
+.advice-action.stand { color: var(--green); }
+.advice-action.double { color: var(--amber); }
+.advice-action.split { color: var(--purple); }
+.advice-action.surrender { color: var(--red); }
+.advice-action.insurance { color: var(--amber); }
+.advice-action.neutral { color: var(--muted); }
+.advice-ev {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+}
+.advice-ev b { font-size: 15px; display: block; }
+.advice-ev b.pos { color: var(--green); }
+.advice-ev b.neg { color: var(--red); }
+
+.ev-breakdown {
+  padding: 10px 14px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+.ev-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  padding: 5px 8px;
+  background: var(--surface2);
+  border-radius: 5px;
+  border: 1px solid var(--border);
+}
+.ev-row.best { border-color: var(--green2); background: #0a1f0f; }
+.ev-row.worst { opacity: .5; }
+.ev-label { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+.ev-val { font-family: var(--mono); font-size: 12px; font-weight: 700; }
+.ev-val.pos { color: var(--green); }
+.ev-val.neg { color: var(--red); }
+.ev-val.neu { color: var(--amber); }
+
+.reason-box {
+  padding: 8px 14px 10px;
+  font-size: 12px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  line-height: 1.6;
+}
+.reason-box b { color: var(--text); }
+
+/* ── Probability bars ── */
+.prob-section {
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+}
+.prob-title { font-family: var(--mono); font-size: 9px; color: var(--muted); letter-spacing: .1em; margin-bottom: 8px; text-transform: uppercase; }
+.prob-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.prob-note {
+  font-family: var(--sans);
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: var(--muted);
+  margin-top: 8px;
+  padding: 7px 9px;
+  border-left: 2px solid var(--border2);
+  background: rgba(255,255,255,.02);
+  border-radius: 0 6px 6px 0;
+}
+.prob-note b { color: var(--text); }
+.prob-label { font-family: var(--mono); font-size: 10px; color: var(--muted); width: 80px; flex-shrink: 0; }
+.prob-bar-wrap { flex: 1; height: 5px; background: var(--surface2); border-radius: 3px; }
+.prob-fill { height: 5px; border-radius: 3px; }
+.prob-fill.win { background: var(--green2); }
+.prob-fill.lose { background: #7f1d1d; }
+.prob-fill.push { background: var(--dim); }
+.prob-pct { font-family: var(--mono); font-size: 10px; width: 36px; text-align: right; flex-shrink: 0; color: var(--muted); }
+
+/* ── Insurance card ── */
+.ins-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.ins-card.take { border-color: var(--amber); }
+.ins-card.skip { border-color: var(--border2); }
+.ins-header {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+.ins-verdict {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .06em;
+}
+.ins-verdict.take { color: var(--amber); }
+.ins-verdict.skip { color: var(--muted); }
+.ins-ev-badge {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+}
+.ins-ev-badge b { font-size: 15px; display: block; }
+.ins-body {
+  padding: 10px 14px;
+}
+.ins-stat-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.ins-stat {
+  flex: 1;
+  min-width: 80px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 7px 10px;
+  text-align: center;
+}
+.ins-stat-val {
+  font-family: var(--mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 3px;
+}
+.ins-stat-val.good { color: var(--green); }
+.ins-stat-val.bad  { color: var(--red); }
+.ins-stat-lbl {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.ins-bar-section { margin-bottom: 8px; }
+.ins-bar-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.ins-bar-track {
+  height: 8px;
+  background: var(--surface2);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+.ins-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width .3s;
+}
+.ins-bar-fill.ten { background: var(--amber); }
+.ins-bar-threshold {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 2px;
+  background: var(--red);
+  opacity: 0.8;
+}
+.ins-threshold-label {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.ins-note {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.6;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  margin-top: 4px;
+}
+.ins-note b { color: var(--text); }
+.ins-note .ins-take-txt { color: var(--amber); font-weight: 700; }
+.ins-note .ins-skip-txt { color: var(--muted); }
+
+/* ── Waiting state ── */
+.waiting {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: .06em;
+}
+.waiting .big { font-size: 32px; margin-bottom: 10px; color: var(--dim); }
+
+/* ── Controls ── */
+#controls {
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.ctrl-btn {
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 9px 20px;
+  border-radius: 6px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+.ctrl-btn:hover { background: var(--dim); }
+.ctrl-btn.danger { background: #7f1d1d44; border-color: #7f1d1d; color: #fca5a5; }
+.ctrl-btn.primary { background: #0a2810; border-color: var(--green2); color: var(--green); }
+
+/* ── Count + bet panel ── */
+#count-panel {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+}
+.system-switch {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.sys-btn {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  padding: 6px 10px;
+  border-radius: 5px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--muted);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+}
+.sys-btn:active { transform: scale(0.96); }
+.sys-btn.active {
+  background: var(--green2);
+  color: #000;
+  border-color: var(--green2);
+}
+.kelly-note {
+  font-family: var(--sans);
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+.variance-box {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border2);
+}
+.variance-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  margin-bottom: 8px;
+}
+.variance-result {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 8px 10px;
+  text-align: center;
+}
+.variance-result .bet-val.good-loss { color: var(--green); }
+.variance-result .bet-val.bad-loss { color: var(--red); }
+.count-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.count-cell {
+  background: var(--surface2);
+  border-radius: 7px;
+  padding: 8px 10px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+.count-cell.edge-pos { border-color: var(--green2); background: #071a0e; }
+.count-cell.edge-neg { border-color: #7f1d1d; background: #130808; }
+.cc-label {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.cc-val {
+  font-family: var(--mono);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text);
+}
+.cc-val.pos { color: var(--green); }
+.cc-val.neg { color: var(--red); }
+.cc-val.neu { color: var(--amber); }
+.kelly-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.kelly-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.kelly-inputs-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+@media (max-width: 520px) {
+  .kelly-inputs-4 { grid-template-columns: 1fr 1fr; }
+}
+.ki { display: flex; flex-direction: column; gap: 5px; }
+.ki label {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: .01em;
+}
+.ki input, .ki select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+}
+.ki select {
+  cursor: pointer;
+  appearance: auto;
+}
+.ki select option {
+  font-size: 14px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 6px;
+}
+.bet-cell {
+  background: var(--surface2);
+  border-radius: 7px;
+  padding: 10px 12px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+.bet-cell.active { border-color: var(--green2); background: #071a0e; }
+.bet-label {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+.bet-val { font-family: var(--mono); font-size: 17px; font-weight: 700; color: var(--green); }
+
+/* ── Risk of Ruin ───────────────────────────────────────── */
+.ror-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.ror-main {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.ror-cell {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 10px;
+  text-align: center;
+}
+.ror-cell.hero { grid-row: span 1; }
+.ror-cell.lvl-good { border-color: var(--green2); background: #071a0e; }
+.ror-cell.lvl-warn { border-color: #7a5b12; background: #1a1405; }
+.ror-cell.lvl-bad  { border-color: #7f1d1d; background: #130808; }
+.ror-label {
+  font-family: var(--sans);
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 4px;
+  line-height: 1.25;
+}
+.ror-val {
+  font-family: var(--mono);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+.ror-val.big { font-size: 26px; }
+.ror-val.pos { color: var(--green); }
+.ror-val.neu { color: var(--amber); }
+.ror-val.neg { color: var(--red); }
+.ror-sub {
+  font-family: var(--sans);
+  font-size: 9.5px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.ror-grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.ror-verdict {
+  font-family: var(--sans);
+  font-size: 11.5px;
+  line-height: 1.45;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  margin-bottom: 8px;
+}
+.ror-verdict b { color: var(--text); }
+.ror-verdict.lvl-good { border-color: var(--green2); }
+.ror-verdict.lvl-warn { border-color: #7a5b12; }
+.ror-verdict.lvl-bad  { border-color: #7f1d1d; }
+@media (max-width: 430px) {
+  .ror-main { grid-template-columns: 1fr 1fr; }
+  .ror-cell.hero { grid-column: 1 / -1; }
+  .ror-inputs { grid-template-columns: 1fr 1fr; }
+  .ror-inputs .ki:last-child { grid-column: 1 / -1; }
+  .ror-val { font-size: 15px; }
+  .ror-val.big { font-size: 30px; }
+}
+.ror-sublabel {
+  font-family: var(--sans);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin: 10px 0 6px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">PERFECT PLAY <span>ADVISOR</span></div>
+  <div class="header-right">
+    <div class="hbtn active" id="btn-8deck" onclick="setDecks(8,this)">8 decks</div>
+    <div class="hbtn" id="btn-6deck" onclick="setDecks(6,this)">6 decks</div>
+    <div class="hbtn" id="btn-2deck" onclick="setDecks(2,this)">2 decks</div>
+    <div class="hbtn" id="btn-1deck" onclick="setDecks(1,this)">1 deck</div>
+  </div>
+</header>
+<div style="max-width:960px;margin:10px 12px 0;padding:9px 14px;border:1px solid rgba(242,180,65,.4);background:rgba(242,180,65,.08);border-radius:10px;font:13px/1.45 'DM Sans',system-ui,sans-serif;color:inherit">
+  <b>Tréningový nástroj.</b> Slúži na učenie sa optimálnej stratégie a počítania kariet. Používanie pomocného softvéru počas skutočnej hry väčšina kasín zakazuje vo svojich podmienkach. Návody nájdeš na <a href="https://surebety.blog/" style="color:#F2B441">surebety.blog</a>. Hra len pre osoby staršie ako 18 rokov.
+</div>
+
+
+<!-- Profiles -->
+<div id="profile-bar">
+  <span class="prof-label">PROFIL:</span>
+  <select class="prof-select" id="prof-select"></select>
+  <button class="prof-btn load" onclick="loadProfile()">Načítať</button>
+  <button class="prof-btn save" onclick="saveProfile()">Uložiť sem</button>
+  <button class="prof-btn" onclick="renameProfile()">Premenovať</button>
+  <span class="prof-status" id="prof-status">Posledné nastavenia sa ukladajú automaticky</span>
+</div>
+
+<!-- Rules -->
+<div id="rules-bar">
+  <div class="rule-toggle" id="r-h17" onclick="toggleRule('h17',this)" title="Dealer hits soft 17">H17</div>
+  <div class="rule-toggle on" id="r-das" onclick="toggleRule('das',this)" title="Double after split">DAS</div>
+  <div class="rule-toggle" id="r-rsa" onclick="toggleRule('rsa',this)" title="Resplit aces">RSA</div>
+  <div class="rule-toggle" id="r-ls" onclick="toggleRule('ls',this)" title="Late surrender">Surrender</div>
+  <div class="rule-toggle" id="r-es" onclick="toggleRule('es',this)" title="Early surrender">Early surr.</div>
+  <div class="rule-toggle on" id="r-bj32" onclick="toggleRule('bj32',this)" title="Blackjack pays 3:2">BJ 3:2</div>
+</div>
+
+<!-- Deck tracker -->
+<div id="deck-section">
+  <div class="section-label">Tap a rank each time a card is dealt</div>
+  <div class="section-label" style="margin-top:-4px;opacity:.75;text-transform:none;letter-spacing:normal;font-size:10.5px">
+    Ťukni na rožok <b style="color:var(--amber)">D</b> na karte = 1 ťuk pre dealerovu kartu (bez tlačidla nižšie)
+  </div>
+  <div class="zone-side-row">
+    <span class="zone-side-label">Rožok D:</span>
+    <div class="zone-side-btn" id="zone-side-left" onclick="setDealerZoneSide('left')">⬅ Vľavo</div>
+    <div class="zone-side-btn" id="zone-side-right" onclick="setDealerZoneSide('right')">Vpravo ➡</div>
+  </div>
+  <div class="dealer-tag-row">
+    <button class="dealer-tag-btn" id="dealer-tag-btn" onclick="toggleDealerTag()">🎯 Ďalšia karta → DEALEROVI</button>
+    <div class="round-count" id="round-count">Odohraných kôl: 0</div>
+  </div>
+  <div class="dealer-progress" id="dealer-progress"></div>
+  <div class="deck-grid" id="deck-grid"></div>
+  <div class="deck-undo-row">
+    <button class="deck-undo-btn" id="deck-undo-btn" onclick="undoDeal()" disabled>↩ Return last card</button>
+    <div class="last-dealt" id="last-dealt" style="display:none"></div>
+  </div>
+  <div class="dealt-history" id="dealt-history"></div>
+  <div class="deck-stats" id="deck-stats"></div>
+  <div id="insurance-live"></div>
+  <div class="history-export-row">
+    <div class="history-count" id="history-count">Zaznamenaných kariet: 0</div>
+    <button class="history-export-btn" onclick="exportHistory()">📥 Exportovať históriu (CSV)</button>
+  </div>
+</div>
+
+<!-- Count + bet panel -->
+<div id="count-panel">
+  <div class="section-label" style="margin-bottom:6px">Counting system</div>
+  <div class="system-switch" id="system-switch">
+    <div class="sys-btn" data-sys="halves" onclick="setCountSystem('halves')">WONG HALVES</div>
+    <div class="sys-btn" data-sys="hilo" onclick="setCountSystem('hilo')">HI-LO</div>
+    <div class="sys-btn active" data-sys="exact" onclick="setCountSystem('exact')">PRESNÝ (EOR)</div>
+  </div>
+  <div class="count-grid">
+    <div class="count-cell"><div class="cc-label" id="cp-rc-label">Wong Halves RC</div><div class="cc-val" id="cp-rc">0</div></div>
+    <div class="count-cell"><div class="cc-label" id="cp-tc-label">True Count</div><div class="cc-val" id="cp-tc">0.00</div></div>
+    <div class="count-cell" id="cp-edge-cell"><div class="cc-label" id="cp-edge-label">Player edge</div><div class="cc-val" id="cp-edge">−0.52%</div></div>
+    <div class="count-cell"><div class="cc-label">Decks left</div><div class="cc-val neu" id="cp-decks">8.0</div></div>
+  </div>
+  <div class="kelly-inputs kelly-inputs-4" style="margin-bottom:6px">
+    <div class="ki"><label>Bankroll (€)</label><input type="number" id="cp-bankroll" value="40000" min="1" oninput="updateCountPanel()"></div>
+    <div class="ki"><label>Min bet (€)</label><input type="number" id="cp-minbet" value="10" min="1" oninput="updateCountPanel()"></div>
+    <div class="ki"><label>Kelly fraction</label>
+      <select id="cp-kfrac" onchange="updateCountPanel()">
+        <option value="0.25">1/4 Kelly (safe)</option>
+        <option value="0.5" selected>1/2 Kelly</option>
+        <option value="1">Full Kelly</option>
+      </select>
+    </div>
+    <div class="ki"><label>Počet boxov</label>
+      <select id="cp-boxes" onchange="updateCountPanel()">
+        <option value="1">1 box</option>
+        <option value="2" selected>2 boxy</option>
+        <option value="3">3 boxy</option>
+        <option value="4">4 boxy</option>
+      </select>
+    </div>
+  </div>
+  <div class="kelly-row">
+    <div class="bet-cell"><div class="bet-label" id="cp-lbl25">1/4 Kelly bet</div><div class="bet-val" id="cp-bet25">€10</div></div>
+    <div class="bet-cell"><div class="bet-label" id="cp-lbl50">1/2 Kelly bet</div><div class="bet-val" id="cp-bet50">€10</div></div>
+    <div class="bet-cell active"><div class="bet-label" id="cp-lblsugg">Suggested bet</div><div class="bet-val" id="cp-betsugg">€10</div></div>
+  </div>
+  <div class="kelly-note" id="cp-boxes-note" style="display:none"></div>
+  <div class="kelly-note">Kelly stávky vždy počítajú z presného EOR modelu (skutočne vylúčené karty), bez ohľadu na zvolený systém vyššie — ten slúži len ako referenčný RC/TC panel.</div>
+
+  <div class="variance-box">
+    <div class="section-label" style="margin-bottom:6px">Pravdepodobnosť straty (variancia)</div>
+    <div class="variance-row">
+      <div class="ki" style="flex:1">
+        <label>Počet kôl v tomto úseku</label>
+        <input type="number" id="cp-hands" value="100" min="1" step="1" oninput="updateCountPanel()">
+      </div>
+      <div class="variance-result">
+        <div class="bet-label">P(strata na úseku)</div>
+        <div class="bet-val" id="cp-lossprob">—</div>
+      </div>
+    </div>
+    <div class="kelly-note" id="cp-variance-note">Počíta sa z presného EOR edge (aktuálny stav balíčka) a bežnej odchýlky ~1,15 jednotky stávky na ruku — normálna aproximácia, orientačný odhad.</div>
+  </div>
+
+  <!-- ── Risk of Ruin ─────────────────────────────────────── -->
+  <div class="variance-box">
+    <div class="section-label" style="margin-bottom:2px">Risk of Ruin (bankroll counter-a)</div>
+    <div class="kelly-note" style="margin-bottom:8px">Dlhodobý model — nepoužíva edge aktuálnej topánky, ale tvoju <b>priemernú výhodu naprieč všetkými countmi</b>. Bankroll sa berie z políčka vyššie (€<span id="ror-bankroll-echo">1000</span>).</div>
+
+    <div class="ror-inputs">
+      <div class="ki">
+        <label>Dlhodobá výhoda (%)</label>
+        <input type="number" id="cp-ror-edge" value="1.0" min="0.05" max="5" step="0.05" oninput="updateRiskOfRuin(); saveLastSettings()">
+      </div>
+      <div class="ki">
+        <label id="ror-avgbet-label">Priemerná stávka (€)</label>
+        <input type="number" id="cp-ror-avgbet" value="25" min="1" step="1" oninput="updateRiskOfRuin(); saveLastSettings()">
+      </div>
+      <div class="ki">
+        <label>Bet spread</label>
+        <select id="cp-ror-spread" onchange="updateRiskOfRuin(); saveLastSettings()">
+          <option value="1.00">Flat (bez spreadu)</option>
+          <option value="1.35">1–4</option>
+          <option value="1.55" selected>1–8</option>
+          <option value="1.75">1–12</option>
+          <option value="2.00">1–20</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="ror-main">
+      <div class="ror-cell hero" id="ror-main-cell">
+        <div class="ror-label">Risk of Ruin (∞ kôl, bez resizingu)</div>
+        <div class="ror-val big" id="ror-value">—</div>
+        <div class="ror-sub" id="ror-units">—</div>
+      </div>
+      <div class="ror-cell">
+        <div class="ror-label">Bankroll pre RoR 5 %</div>
+        <div class="ror-val" id="ror-bank5">—</div>
+        <div class="ror-sub" id="ror-bank5-u">—</div>
+      </div>
+      <div class="ror-cell">
+        <div class="ror-label">Bankroll pre RoR 1 %</div>
+        <div class="ror-val" id="ror-bank1">—</div>
+        <div class="ror-sub" id="ror-bank1-u">—</div>
+      </div>
+    </div>
+
+    <div class="ror-verdict" id="ror-verdict">—</div>
+    <div class="ror-verdict" id="ror-boxcmp" style="display:none">—</div>
+
+    <div class="ror-grid3">
+      <div class="ror-cell">
+        <div class="ror-label">EV / 100 kôl</div>
+        <div class="ror-val" id="ror-ev100">—</div>
+      </div>
+      <div class="ror-cell">
+        <div class="ror-label">SD / 100 kôl</div>
+        <div class="ror-val" id="ror-sd100">—</div>
+      </div>
+      <div class="ror-cell">
+        <div class="ror-label">N0 (kôl na prekrytie SD)</div>
+        <div class="ror-val" id="ror-n0">—</div>
+      </div>
+    </div>
+
+    <div class="ror-sublabel">Riziko krachu v rámci <span id="ror-trip-n">100</span> kôl</div>
+    <div class="ror-grid3">
+      <div class="ror-cell">
+        <div class="ror-label">RoR na tomto úseku</div>
+        <div class="ror-val" id="ror-trip">—</div>
+      </div>
+      <div class="ror-cell">
+        <div class="ror-label">Očak. výsledok úseku</div>
+        <div class="ror-val" id="ror-trip-ev">—</div>
+      </div>
+      <div class="ror-cell">
+        <div class="ror-label">Rozsah ±1 SD</div>
+        <div class="ror-val" id="ror-trip-band" style="font-size:13px">—</div>
+      </div>
+    </div>
+
+    <div class="ror-sublabel">S priebežným Kelly resizingom (<span id="ror-kf-echo">1/4</span> Kelly)</div>
+    <div class="ror-grid3">
+      <div class="ror-cell">
+        <div class="ror-label">P(prepad na 50 % banku)</div>
+        <div class="ror-val" id="ror-dd50">—</div>
+      </div>
+      <div class="ror-cell">
+        <div class="ror-label">P(prepad na 25 % banku)</div>
+        <div class="ror-val" id="ror-dd25">—</div>
+      </div>
+      <div class="ror-cell">
+        <div class="ror-label">P(prepad na 10 % banku)</div>
+        <div class="ror-val" id="ror-dd10">—</div>
+      </div>
+    </div>
+
+    <div class="kelly-note">RoR = e^(−2·μ·B/σ²) (Sileo/Schlesinger), kde μ = výhoda × priem. stávka × počet boxov, σ = 1,15 × faktor spreadu × priem. stávka × √(N·(1+(N−1)·0,377)). Kovariancia medzi rukami proti tomu istému dealerovi ≈ 0,377 — preto 2 boxy nie sú dve nezávislé stávky. Resizing riadok používa P = a^(2/f − 1). Model predpokladá, že hráš svoju ramp disciplinovane a bankroll nedopĺňaš.</div>
+  </div>
+</div>
+
+<!-- Hand input -->
+<div id="hand-section">
+  <div class="section-label" style="margin-bottom:6px">Your hand</div>
+  <div class="hand-display" id="player-display"></div>
+  <div class="hand-total" id="player-total">—</div>
+  <div class="card-selector" id="player-selector"></div>
+
+  <div style="margin-top:10px">
+    <div class="section-label" style="margin-bottom:6px">Dealer upcard</div>
+    <div class="hand-display" id="dealer-display"></div>
+    <div class="card-selector" id="dealer-selector"></div>
+  </div>
+</div>
+
+<!-- Advice -->
+<div id="advice-panel">
+  <div id="advice-output">
+    <div class="waiting">
+      <div class="big">♠</div>
+      Enter your hand and dealer upcard<br>to get perfect play advice
+    </div>
+  </div>
+  <div id="insurance-output"></div>
+</div>
+
+<div id="controls">
+  <button class="ctrl-btn" onclick="clearHand()">Clear hand</button>
+  <button class="ctrl-btn danger" onclick="resetDeck()">Reset deck</button>
+</div>
+
+<script>
+// ── Count + bet panel ─────────────────────────────────────────────
+// Klasicke pocitacie systemy (na zobrazenie RC/TC a pouzitie s publikovanymi
+// deviation indexmi ako Illustrious 18, ktore su kalibrovane na Hi-Lo).
+const COUNT_SYSTEMS = {
+  halves: {
+    label: 'Wong Halves',
+    tags: { 'A':-1, '2':0.5, '3':1, '4':1, '5':1.5, '6':1, '7':0.5, '8':0, '9':-0.5, '10':-1 },
+    edgePerTC: 0.5
+  },
+  hilo: {
+    label: 'Hi-Lo',
+    tags: { 'A':-1, '2':1, '3':1, '4':1, '5':1, '6':1, '7':0, '8':0, '9':0, '10':-1 },
+    edgePerTC: 0.5
+  }
+};
+
+// Effects of Removal (Griffin, Theory of Blackjack) — priblizna zmena house edge (v %)
+// pri odobrati JEDNEJ karty z FULL JEDNOBALICKOVEJ hry (klasicka definicia z literatury).
+// Pri viacbalickovej topanke ma odobratie jednej karty proporcionalne mensi vplyv
+// (kazda dalsia paluba riedi efekt), preto sa efekt kazdej odobranej karty deli poctom balickov v hre.
+// Na rozdiel od point-count systemov nepouziva celociselne vahy — kazda karta ma svoj
+// skutocny matematicky vplyv, takze sucet cez vsetky realne odstranene karty (spravne skalovany)
+// dava najpresnejsi dostupny odhad edge (najma 5-ka a 10-ka maju vyrazne odlisny vplyv,
+// co ziadny bezny count system nezachyti presne).
+const EOR = { '2':0.38, '3':0.44, '4':0.55, '5':0.69, '6':0.46, '7':0.28, '8':0, '9':-0.18, '10':-0.51, 'A':-0.61 };
+
+const HOUSE_EDGE = 0.52;
+
+let activeSystem = 'exact';
+
+function computeExactEdge(total) {
+  // DOLEZITE: deli sa poctom AKTUALNE ZOSTAVAJUCICH balickov (nie povodnym poctom v shoe),
+  // rovnako ako True Count. Rovnaka absolutna odchylka v zlozeni ma oveľa väčší vplyv na
+  // zvysne karty, ked uz vela balickov vypadlo (plytky zvysok shoe = koncentrovanejsi efekt).
+  const cardsLeft = RANKS.reduce((s, r) => s + remaining[r], 0);
+  const decksLeft = Math.max(0.1, cardsLeft / 52);
+  let edge = -HOUSE_EDGE;
+  RANKS.forEach(r => {
+    const removed = total[r] - remaining[r];
+    edge += (removed * EOR[r]) / decksLeft;
+  });
+  return edge;
+}
+
+function setCountSystem(sys) {
+  activeSystem = sys;
+  document.querySelectorAll('.sys-btn').forEach(b => b.classList.toggle('active', b.dataset.sys === sys));
+  updateCountPanel();
+}
+
+function updateCountPanel() {
+  const total = perRank(numDecks);
+  const cardsLeft = Object.values(remaining).reduce((a,b)=>a+b, 0);
+  const decksLeft = Math.max(0.1, cardsLeft / 52);
+
+  // Presny edge sa pocita VZDY (bez ohladu na zvoleny system), pouziva sa pre Kelly nizsie.
+  const exactEdge = computeExactEdge(total);
+
+  const rcLabelEl   = document.getElementById('cp-rc-label');
+  const tcLabelEl   = document.getElementById('cp-tc-label');
+  const edgeLabelEl = document.getElementById('cp-edge-label');
+  const rcEl   = document.getElementById('cp-rc');
+  const tcEl   = document.getElementById('cp-tc');
+  const edgeEl = document.getElementById('cp-edge');
+
+  let displayEdgePct;
+
+  if (activeSystem === 'exact') {
+    const removedTotal = RANKS.reduce((s,r) => s + (total[r] - remaining[r]), 0);
+    const weightedSum  = exactEdge + HOUSE_EDGE; // = Σ removed × EOR, pred pripocitanim house edge
+
+    rcLabelEl.textContent = 'Odstránené karty';
+    rcEl.textContent = removedTotal;
+    rcEl.className = 'cc-val neu';
+
+    tcLabelEl.textContent = 'Vážený efekt (EOR)';
+    tcEl.textContent = (weightedSum >= 0 ? '+' : '') + weightedSum.toFixed(2) + '%';
+    tcEl.className = 'cc-val ' + (weightedSum > 0 ? 'pos' : weightedSum < 0 ? 'neg' : 'neu');
+
+    edgeLabelEl.textContent = 'Player edge (presný)';
+    displayEdgePct = exactEdge;
+  } else {
+    const sys = COUNT_SYSTEMS[activeSystem];
+    let rc = 0;
+    RANKS.forEach(r => {
+      const dealt = total[r] - remaining[r];
+      rc += dealt * sys.tags[r];
+    });
+    const tc = cardsLeft > 0 ? rc / decksLeft : 0;
+
+    rcLabelEl.textContent = sys.label + ' RC';
+    rcEl.textContent = rc >= 0 ? '+' + rc.toFixed(1) : rc.toFixed(1);
+    rcEl.className = 'cc-val ' + (rc > 0 ? 'pos' : rc < 0 ? 'neg' : 'neu');
+
+    tcLabelEl.textContent = 'True Count';
+    tcEl.textContent = (tc >= 0 ? '+' : '') + tc.toFixed(2);
+    tcEl.className = 'cc-val ' + (tc >= 1.5 ? 'pos' : tc <= -1 ? 'neg' : 'neu');
+
+    edgeLabelEl.textContent = 'Player edge (odhad)';
+    displayEdgePct = -HOUSE_EDGE + tc * sys.edgePerTC; // orientacny odhad pre zvoleny system
+  }
+
+  edgeEl.textContent = (displayEdgePct >= 0 ? '+' : '') + displayEdgePct.toFixed(2) + '%';
+  edgeEl.className = 'cc-val ' + (displayEdgePct > 0 ? 'pos' : 'neg');
+  document.getElementById('cp-edge-cell').className = 'count-cell ' + (displayEdgePct > 0 ? 'edge-pos' : 'edge-neg');
+
+  document.getElementById('cp-decks').textContent = decksLeft.toFixed(1);
+
+  // Kelly stavky VZDY pouzivaju presny EOR edge, bez ohladu na zvoleny zobrazovaci system.
+  const bankroll = parseFloat(document.getElementById('cp-bankroll').value) || 1000;
+  const minBet   = parseFloat(document.getElementById('cp-minbet').value)   || 10;
+  const kfrac    = parseFloat(document.getElementById('cp-kfrac').value)    || 0.25;
+  const boxes    = getBoxes();
+  const variance = 1.2;
+  const trueEdgeForKelly = Math.max(0, exactEdge / 100);
+
+  // Pri viacerych boxoch sa stavka NA BOX deli faktorom (1 + (N-1) x kovariancia).
+  // Ruky proti rovnakemu dealerovi su korelovane (spolocna dealerova karta a jeho bust),
+  // takze 2 boxy NIE SU dve nezavisle stavky — variancia rastie rychlejsie nez EV.
+  const kellyDiv = boxKellyDivisor(boxes);
+
+  function makeBet(frac) {
+    let b = (trueEdgeForKelly / variance) * bankroll * frac / kellyDiv;
+    b = Math.max(minBet, Math.round(b / minBet) * minBet);
+    return b;
+  }
+
+  const bet25 = makeBet(0.25), bet50 = makeBet(0.5), betSugg = makeBet(kfrac);
+  document.getElementById('cp-bet25').textContent   = '€' + bet25;
+  document.getElementById('cp-bet50').textContent   = '€' + bet50;
+  document.getElementById('cp-betsugg').textContent = '€' + betSugg;
+
+  const perBox = boxes > 1 ? ' / box' : '';
+  document.getElementById('cp-lbl25').textContent   = '1/4 Kelly bet' + perBox;
+  document.getElementById('cp-lbl50').textContent   = '1/2 Kelly bet' + perBox;
+  document.getElementById('cp-lblsugg').textContent = 'Suggested bet' + perBox;
+
+  const boxNote = document.getElementById('cp-boxes-note');
+  if (boxes > 1) {
+    boxNote.style.display = '';
+    boxNote.innerHTML = `<b>${boxes} boxy:</b> stávka na box je znížená na <b>${(100/kellyDiv).toFixed(0)} %</b> jednoboxovej Kelly hodnoty (ruky proti tomu istému dealerovi sú korelované). Celková akcia na kolo: <b>€${betSugg * boxes}</b> = ${(boxes/kellyDiv).toFixed(2)}× jednoboxová stávka — viac peňazí v hre pri <b>rovnakom riziku</b>.`;
+  } else {
+    boxNote.style.display = 'none';
+  }
+
+  renderInsuranceLive();
+  updateLossProbability(exactEdge);
+  updateRiskOfRuin();
+  saveLastSettings();
+}
+
+// ── Viac boxov naraz (korelacia ruk) ──────────────────────────────
+// Dve ruky proti rovnakemu dealerovi zdielaju jeho kartu aj jeho bust — su korelovane.
+// Kovariancia medzi rukami ~0.377 (Schlesinger, Blackjack Attack; jeho tabulka optimalnych
+// stavok pre N ruk presne zodpoveda tejto hodnote: 2 ruky = 73%, 3 = 57%, 4 = 47%).
+// Dosledok:  EV rastie linearne s N, ale variancia rastie ako N x (1 + (N-1) x cov).
+//   optimalna stavka na box = jednoboxova / (1 + (N-1) x cov)
+//   SD na kolo (v jednotkach stavky na box) = 1.15 x sqrt(N x (1 + (N-1) x cov))
+// Pri takto zmensenej stavke na box zostava Risk of Ruin IDENTICKY ako pri jednom boxe,
+// ale hodinovy zisk je vyssi (viac akcie na rovnaku varianciu).
+const HAND_COV = 0.377;
+
+function getBoxes() {
+  const el = document.getElementById('cp-boxes');
+  return el ? (parseInt(el.value, 10) || 1) : 1;
+}
+function boxKellyDivisor(n) { return 1 + (n - 1) * HAND_COV; }
+function boxSdFactor(n)     { return Math.sqrt(n * (1 + (n - 1) * HAND_COV)); }
+
+// ── Pravdepodobnost straty na useku (variancia) ───────────────────
+// Normalna aproximacia: P(strata) = Phi(-edge*sqrt(n)/stdev)
+// stdev ~1.15 jednotky stavky na ruku je bezny odhad pre blackjack (zavisi mierne od pravidiel/strategie).
+const HAND_STDEV = 1.15;
+
+function normCDF(x) {
+  // Abramowitz-Stegun aproximacia standardnej normalnej CDF
+  const t = 1 / (1 + 0.2316419 * Math.abs(x));
+  const d = 0.3989423 * Math.exp(-x * x / 2);
+  let prob = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+  if (x > 0) prob = 1 - prob;
+  return prob;
+}
+
+function updateLossProbability(exactEdgePct) {
+  const el = document.getElementById('cp-lossprob');
+  if (!el) return;
+  const nInput = document.getElementById('cp-hands');
+  const n = Math.max(1, parseFloat(nInput.value) || 1);
+  const edge = exactEdgePct / 100; // desatinne cislo, napr. 0.03
+  const boxes = getBoxes();
+
+  // Na kolo: EV = N x edge (v jednotkach stavky na box), SD = 1.15 x sqrt(N x (1+(N-1)cov))
+  const muRound = boxes * edge;
+  const sdRound = HAND_STDEV * boxSdFactor(boxes);
+  const z = (muRound * Math.sqrt(n)) / sdRound;
+  const pLoss = normCDF(-z);
+
+  el.textContent = (pLoss * 100).toFixed(2) + '%';
+  el.className = 'bet-val ' + (pLoss < 0.2 ? 'good-loss' : pLoss < 0.4 ? '' : 'bad-loss');
+
+  const noteEl = document.getElementById('cp-variance-note');
+  if (noteEl) {
+    const edgeStr = (exactEdgePct >= 0 ? '+' : '') + exactEdgePct.toFixed(2) + '%';
+    noteEl.innerHTML = `Počíta sa z aktuálneho presného EOR edge (${edgeStr}) a bežnej odchýlky ~1,15 jednotky stávky na ruku — normálna aproximácia, orientačný odhad.` +
+      (boxes > 1 ? ` Zohľadnené <b>${boxes} boxy</b> na kolo (SD na kolo = ${sdRound.toFixed(2)} jednotky, nie ${(HAND_STDEV*boxes).toFixed(2)} — ruky sú korelované).` : '');
+  }
+}
+
+// ── Risk of Ruin ──────────────────────────────────────────────────
+// Klasicky model (Sileo / Schlesinger, Blackjack Attack):
+//   mu    = dlhodoba vyhoda x priemerna stavka           (ocakavany zisk na kolo, €)
+//   sigma = 1.15 x faktor spreadu x priemerna stavka     (odchylka na kolo, €)
+//   RoR   = exp(-2 x mu x B / sigma^2)                   (pravdepodobnost, ze bankroll padne na 0
+//                                                         niekedy pocas nekonecneho hrania)
+// DOLEZITE: nepouziva sa edge aktualnej topanky (ten kolisa od -0.5% do +3%),
+// ale priemerna vyhoda counter-a naprieč vsetkymi countmi — typicky 0.5-1.5%
+// pri realnom spreade a slusnej penetracii.
+//
+// Faktor spreadu: pri rampovanom stavkovani je odchylka na kolo vacsia nez pri
+// flat hre, lebo velke stavky prispievaju do variancie kvadraticky.
+// sigma/priem.stavka = 1.15 x sqrt(E[b^2])/E[b]; hodnoty v selecte su bezne
+// aproximacie pre typicke rampy (1-8 spread ~ 1.55).
+
+function updateRiskOfRuin() {
+  const elVal = document.getElementById('ror-value');
+  if (!elVal) return;
+
+  const B      = parseFloat(document.getElementById('cp-bankroll').value) || 0;
+  const edgePc = parseFloat(document.getElementById('cp-ror-edge').value);
+  const avgBet = parseFloat(document.getElementById('cp-ror-avgbet').value) || 0;
+  const spread = parseFloat(document.getElementById('cp-ror-spread').value) || 1;
+  const kfrac  = parseFloat(document.getElementById('cp-kfrac').value) || 0.25;
+  const nHands = Math.max(1, parseFloat(document.getElementById('cp-hands').value) || 1);
+
+  const echo = document.getElementById('ror-bankroll-echo');
+  if (echo) echo.textContent = B.toLocaleString('sk-SK');
+  document.getElementById('ror-trip-n').textContent = nHands.toLocaleString('sk-SK');
+  document.getElementById('ror-kf-echo').textContent =
+    kfrac === 1 ? 'plný' : kfrac === 0.5 ? '1/2' : '1/4';
+  const boxesNow = getBoxes();
+  document.getElementById('ror-avgbet-label').textContent =
+    boxesNow > 1 ? 'Priem. stávka / box (€)' : 'Priemerná stávka (€)';
+
+  const fmtEur = v => '€' + Math.round(v).toLocaleString('sk-SK');
+  const fmtPct = p => p >= 0.9995 ? '≈100%' : p < 0.00005 ? '<0,01%' : (p * 100).toFixed(2) + '%';
+  const cellEl  = document.getElementById('ror-main-cell');
+  const verdict = document.getElementById('ror-verdict');
+
+  // Bez kladnej vyhody je krach istota (staci dost kol) — model nema zmysel pocitat dalej.
+  if (!(edgePc > 0) || avgBet <= 0 || B <= 0) {
+    elVal.textContent = '100%';
+    elVal.className = 'ror-val big neg';
+    cellEl.className = 'ror-cell hero lvl-bad';
+    document.getElementById('ror-units').textContent = '—';
+    ['ror-bank5','ror-bank1','ror-bank5-u','ror-bank1-u','ror-ev100','ror-sd100','ror-n0',
+     'ror-trip','ror-trip-ev','ror-trip-band','ror-dd50','ror-dd25','ror-dd10']
+      .forEach(id => { const e = document.getElementById(id); if (e) e.textContent = '—'; });
+    verdict.className = 'ror-verdict lvl-bad';
+    verdict.innerHTML = 'Bez <b>kladnej dlhodobej výhody</b> (a nenulového bankrollu) je krach matematicky istý — zadaj výhodu &gt; 0 %.';
+    const cmpEl = document.getElementById('ror-boxcmp');
+    if (cmpEl) cmpEl.style.display = 'none';
+    return;
+  }
+
+  const e   = edgePc / 100;
+  const N   = getBoxes();
+  // Na KOLO (nie na ruku): pri N boxoch je EV N-nasobne, ale SD rastie len ako
+  // sqrt(N x (1 + (N-1) x cov)) — preto je viac boxov efektivnejsie na jednotku rizika.
+  const mu  = N * e * avgBet;                                  // € na kolo
+  const sd  = HAND_STDEV * spread * avgBet * boxSdFactor(N);   // € na kolo
+  const varH = sd * sd;
+
+  // ── Hlavny RoR (nekonecny horizont, bez resizingu) ──
+  const ror = Math.min(1, Math.exp(-2 * mu * B / varH));
+  elVal.textContent = fmtPct(ror);
+  const lvl = ror < 0.05 ? 'good' : ror < 0.135 ? 'warn' : 'bad';
+  elVal.className = 'ror-val big ' + (lvl === 'good' ? 'pos' : lvl === 'warn' ? 'neu' : 'neg');
+  cellEl.className = 'ror-cell hero lvl-' + lvl;
+  document.getElementById('ror-units').textContent = N > 1
+    ? 'akcia na kolo ' + fmtEur(N * avgBet) + ' (' + N + '×' + fmtEur(avgBet) + ') = ' + (B / (N * avgBet)).toFixed(0) + '× v banku'
+    : 'bankroll = ' + (B / avgBet).toFixed(0) + '× priem. stávka';
+
+  // ── Potrebny bankroll pre cielove RoR: B = -ln(t) x sigma^2 / (2 x mu) ──
+  const bankFor = t => (-Math.log(t) * varH) / (2 * mu);
+  const b5 = bankFor(0.05), b1 = bankFor(0.01);
+  document.getElementById('ror-bank5').textContent = fmtEur(b5);
+  document.getElementById('ror-bank1').textContent = fmtEur(b1);
+  document.getElementById('ror-bank5-u').textContent = (b5 / avgBet).toFixed(0) + '× stávka' + (N > 1 ? '/box' : '');
+  document.getElementById('ror-bank1-u').textContent = (b1 / avgBet).toFixed(0) + '× stávka' + (N > 1 ? '/box' : '');
+
+  // ── Rychlost vs. variancia ──
+  const ev100 = 100 * mu;
+  const sd100 = sd * 10;                     // sigma x sqrt(100)
+  const n0    = Math.pow(sd / mu, 2);        // kol, kym EV dobehne 1 SD
+  document.getElementById('ror-ev100').textContent = '+' + fmtEur(ev100);
+  document.getElementById('ror-sd100').textContent = '±' + fmtEur(sd100);
+  const n0El = document.getElementById('ror-n0');
+  n0El.textContent = n0 >= 10000 ? Math.round(n0 / 1000) + 'k' : Math.round(n0).toLocaleString('sk-SK');
+  n0El.className = 'ror-val ' + (n0 < 20000 ? 'pos' : n0 < 60000 ? 'neu' : 'neg');
+
+  // ── RoR v ramci konecneho useku (first-passage aproximacia) ──
+  // P = Phi((-B - n x mu)/(sigma x sqrt(n))) + e^(-2 mu B/sigma^2) x Phi((-B + n x mu)/(sigma x sqrt(n)))
+  const sN = sd * Math.sqrt(nHands);
+  const tripRor = Math.min(1,
+    normCDF((-B - nHands * mu) / sN) + ror * normCDF((-B + nHands * mu) / sN)
+  );
+  const tripEl = document.getElementById('ror-trip');
+  tripEl.textContent = fmtPct(tripRor);
+  tripEl.className = 'ror-val ' + (tripRor < 0.02 ? 'pos' : tripRor < 0.10 ? 'neu' : 'neg');
+  document.getElementById('ror-trip-ev').textContent = '+' + fmtEur(nHands * mu);
+  document.getElementById('ror-trip-band').textContent =
+    fmtEur(nHands * mu - sN) + ' … ' + fmtEur(nHands * mu + sN);
+
+  // ── Kelly resizing: P(niekedy klesnut na zlomok a banku) = a^(2/f - 1) ──
+  const exp = 2 / kfrac - 1;
+  const dd = a => Math.pow(a, exp);
+  [['ror-dd50', 0.5], ['ror-dd25', 0.25], ['ror-dd10', 0.10]].forEach(([id, a]) => {
+    const p = dd(a);
+    const el = document.getElementById(id);
+    el.textContent = fmtPct(p);
+    el.className = 'ror-val ' + (p < 0.05 ? 'pos' : p < 0.2 ? 'neu' : 'neg');
+  });
+
+  // ── Verdikt ──
+  const perBoxTxt = N > 1 ? ' na box' : '';
+  verdict.className = 'ror-verdict lvl-' + lvl;
+  if (lvl === 'good') {
+    verdict.innerHTML = `Bankroll <b>${fmtEur(B)}</b> je pri priemernej stávke <b>${fmtEur(avgBet)}</b>${perBoxTxt} a výhode <b>${edgePc.toFixed(2)}%</b> dostatočný — RoR pod 5 %. Reálne očakávaj prepady až <b>${fmtEur(2 * sd100)}</b> (2 SD na 100 kôl) bez toho, aby niečo bolo zle.`;
+  } else if (lvl === 'warn') {
+    verdict.innerHTML = `RoR <b>${fmtPct(ror)}</b> je v pásme „plný Kelly" (~13,5 %) — hrateľné, ale citlivé. Pre 5% riziko potrebuješ bankroll <b>${fmtEur(b5)}</b>, alebo zníž priemernú stávku${perBoxTxt} na <b>${fmtEur(avgBet * B / b5)}</b>.`;
+  } else {
+    verdict.innerHTML = `<b>Prestávkované.</b> RoR <b>${fmtPct(ror)}</b> je príliš vysoké. Buď zdvihni bankroll na <b>${fmtEur(b5)}</b> (pre 5 % riziko), alebo zníž priemernú stávku${perBoxTxt} na <b>${fmtEur(avgBet * B / b5)}</b> pri rovnakom banku.`;
+  }
+
+  // ── Porovnanie: rovnaka stavka na box vs. spravne zmensena ──
+  const cmp = document.getElementById('ror-boxcmp');
+  if (N > 1) {
+    cmp.style.display = '';
+    const div = boxKellyDivisor(N);
+    const scaledBet = avgBet / div;               // spravne zmensena stavka na box
+    const muS  = N * e * scaledBet;
+    const sdS  = HAND_STDEV * spread * scaledBet * boxSdFactor(N);
+    const rorS = Math.min(1, Math.exp(-2 * muS * B / (sdS * sdS)));
+    // Ekvivalentny jednoboxovy RoR pri rovnakej stavke (referencia)
+    const mu1  = e * avgBet;
+    const sd1  = HAND_STDEV * spread * avgBet;
+    const ror1 = Math.min(1, Math.exp(-2 * mu1 * B / (sd1 * sd1)));
+    // Bankroll potrebny na to, aby N boxov pri rovnakej stavke malo rovnake RoR ako 1 box:
+    // exp(-2 mu B'/sigma^2) = ror1  =>  B' = B x ln(ror1)/ln(ror). Chranene proti log(0)/log(1).
+    const bankNeeded = (ror < 0.9999 && ror > 1e-12 && ror1 > 1e-12 && ror1 < 0.9999)
+      ? B * Math.log(ror1) / Math.log(ror) : null;
+    cmp.innerHTML =
+      `<b>${N} boxy pri rovnakej stávke ${fmtEur(avgBet)}/box:</b> RoR <b>${fmtPct(ror)}</b> ` +
+      `— oproti <b>${fmtPct(ror1)}</b>, keby si hral len 1 box za ${fmtEur(avgBet)}. ` +
+      `Na návrat k jednoboxovému riziku <b>nepotrebuješ dvojnásobný bankroll</b>: ` +
+      `stačí znížiť stávku na box na <b>${fmtEur(scaledBet)}</b> (${(100/div).toFixed(0)} %), ` +
+      `čím dostaneš RoR <b>${fmtPct(rorS)}</b> a napriek tomu ${(N/div).toFixed(2)}× viac akcie na kolo.` +
+      (bankNeeded ? ` Alebo — pri zachovaní stávky ${fmtEur(avgBet)}/box — zvýš bankroll na <b>${fmtEur(bankNeeded)}</b> (${(bankNeeded/B).toFixed(2)}× súčasný).` : '');
+  } else {
+    cmp.style.display = 'none';
+  }
+}
+
+// ── Live insurance strip ──────────────────────────────────────────
+// Vzdy viditelne, nezavisi od zadania karty hraca/dealera.
+// Predpoklada scenar "dealer ukazuje eso" a pocita sa cisto z aktualneho stavu balicka.
+// EV = P(ten) x 2 - (1 - P(ten)) = 3xP(ten) - 1 ; break-even P(ten) = 1/3
+function renderInsuranceLive() {
+  const el = document.getElementById('insurance-live');
+  if (!el) return;
+
+  const left = RANKS.reduce((s,r) => s + remaining[r], 0);
+  if (!left) { el.innerHTML = ''; return; }
+
+  const tens    = remaining['10'];
+  const tenPct  = tens / left;
+  const ev      = tenPct * 2 - (1 - tenPct);
+  const breakEven = 1 / 3;
+  const take    = ev >= 0;
+  const diff    = ((tenPct - breakEven) * 100).toFixed(1);
+  const diffStr = diff > 0 ? `+${diff}` : `${diff}`;
+
+  el.innerHTML = `
+    <div class="ins-live">
+      <div class="ins-live-badge ${take ? 'take' : 'skip'}">${take ? '🛡 TAKE' : '✗ SKIP'} INSURANCE</div>
+      <div class="ins-live-stats">
+        Ak dealer ukáže eso — tens v balíčku: <b>${(tenPct*100).toFixed(1)}%</b> (${tens}/${left}), break-even <b>33.3%</b>,
+        rozdiel <b>${diffStr}pp</b>, EV <b>${ev >= 0 ? '+' : ''}${ev.toFixed(3)}</b>/jednotku poistky
+      </div>
+    </div>`;
+}
+const RANKS = ['2','3','4','5','6','7','8','9','10','A'];
+const VALS  = { 'A':11,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10 };
+
+let numDecks = 8;
+let remaining = {};
+let playerCards = [];
+let dealerCard = null;
+let rules = { h17: false, das: true, rsa: false, ls: false, es: false, bj32: true };
+
+function perRank(n) {
+  const t = {};
+  RANKS.forEach(r => { t[r] = (r === '10') ? 4*4*n : 4*n; });
+  return t;
+}
+
+function initDeck() {
+  remaining = perRank(numDecks);
+}
+
+function setDecks(n, el) {
+  numDecks = n;
+  document.querySelectorAll('.hbtn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  resetDeck();
+  saveLastSettings();
+}
+
+function toggleRule(key, el) {
+  rules[key] = !rules[key];
+  el.classList.toggle('on', rules[key]);
+  analyze();
+  saveLastSettings();
+}
+
+function resetDeck() {
+  initDeck();
+  deckUndoStack = [];
+  historyLog = [];
+  nextCardIsDealer = false;
+  currentRoundDealerCards = [];
+  roundIndex = 0;
+  roundMarkers = [];
+  playerCards = [];
+  dealerCard = null;
+  buildDeckGrid();
+  buildSelectors();
+  renderHandDisplays();
+  updateCountPanel();
+  updateDealerTagBtn();
+  updateRoundCount();
+  updateDealerProgress();
+  analyze();
+}
+
+function clearHand() {
+  playerCards = [];
+  dealerCard = null;
+  buildSelectors();
+  renderHandDisplays();
+  analyze();
+}
+
+// ── Deck UI ──────────────────────────────────────────────────────
+let deckUndoStack = [];
+// historyLog drzi plnu, presnu chronologiu tejto topanky pre neskorsi export (rank + cas kazdej karty).
+let historyLog = [];
+// Oznacovanie karty dealerovi + automaticka detekcia konca kola (dealer dohral = stand/bust).
+let nextCardIsDealer = false;
+let currentRoundDealerCards = [];
+let roundIndex = 0;
+let roundMarkers = []; // {roundIndex, ts, dealerTotal, dealerCards, suggestedBet, historyIndex}
+
+function toggleDealerTag() {
+  nextCardIsDealer = !nextCardIsDealer;
+  updateDealerTagBtn();
+}
+
+function updateDealerTagBtn() {
+  const btn = document.getElementById('dealer-tag-btn');
+  if (!btn) return;
+  btn.classList.toggle('armed', nextCardIsDealer);
+  btn.textContent = nextCardIsDealer ? '🎯 OZNAČENÉ — ťukni kartu dealera' : '🎯 Ďalšia karta → DEALEROVI';
+}
+
+function updateRoundCount() {
+  const el = document.getElementById('round-count');
+  if (el) el.textContent = `Odohraných kôl: ${roundIndex}`;
+}
+
+function updateDealerProgress() {
+  const el = document.getElementById('dealer-progress');
+  if (!el) return;
+  if (currentRoundDealerCards.length === 0) { el.textContent = ''; return; }
+  const { total } = handVal(currentRoundDealerCards);
+  const cardsStr = currentRoundDealerCards.join(', ');
+  el.textContent = `Dealer toto kolo zatiaľ: ${cardsStr} (súčet ${total}, ešte ťahá)`;
+}
+
+// Kontrola, ci prave dealerom oznacena karta zavrsila dealerovu ruku (stand na 17+/bust).
+// Vola sa AZ PO updateDeckGrid(), aby "Suggested bet" v paneli uz odrazal aj tuto kartu.
+function checkRoundEnd(entry) {
+  if (currentRoundDealerCards.length < 2) return;
+  if (dealerMustHit(currentRoundDealerCards)) return; // dealer este musi tahat, kolo nekonci
+
+  const { total: dealerTotal } = handVal(currentRoundDealerCards);
+  const suggestedBetEl = document.getElementById('cp-betsugg');
+  const suggestedBet = suggestedBetEl ? suggestedBetEl.textContent : '';
+
+  roundIndex++;
+  entry.roundEndedHere = true;
+  roundMarkers.push({
+    roundIndex,
+    ts: entry.ts,
+    dealerTotal,
+    dealerCards: currentRoundDealerCards.slice(),
+    suggestedBet,
+    historyIndex: historyLog.length - 1
+  });
+  currentRoundDealerCards = [];
+  updateRoundCount();
+  updateDealerProgress();
+}
+
+function buildDeckGrid() {
+  const grid = document.getElementById('deck-grid');
+  grid.innerHTML = '';
+  const total = perRank(numDecks);
+  RANKS.forEach(r => {
+    const tot = total[r];
+    const rem = remaining[r];
+    const pct = rem / tot;
+    const remCls = pct <= 0 ? 'depleted' : pct <= 0.33 ? 'low' : 'normal';
+    const barCls = pct <= 0 ? 'depleted' : pct <= 0.33 ? 'low' : '';
+    const btnCls = pct <= 0 ? 'depleted' : pct <= 0.33 ? 'low' : '';
+    const btn = document.createElement('div');
+    btn.className = 'rank-btn ' + btnCls;
+    btn.id = 'rankbtn-' + r;
+    btn.innerHTML = `
+      <div class="rank-dealer-zone" title="1 ťuk = dealerova karta">D</div>
+      <div class="rank-label">${r === '10' ? '10' : r}</div>
+      <div class="rank-bar-wrap"><div class="rank-bar ${barCls}" id="rbar-${r}" style="width:${(pct*100).toFixed(0)}%"></div></div>
+      <div class="rank-btn-rem ${remCls}" id="rem-${r}">${rem}</div>`;
+    btn.addEventListener('click', () => dealFromDeck(r));
+    btn.querySelector('.rank-dealer-zone').addEventListener('click', (e) => {
+      e.stopPropagation();
+      dealFromDeck(r, true);
+      const flashBtn = document.getElementById('rankbtn-' + r);
+      if (flashBtn) {
+        flashBtn.classList.add('dealer-armed');
+        setTimeout(() => flashBtn.classList.remove('dealer-armed'), 180);
+      }
+    });
+    grid.appendChild(btn);
+  });
+  updateDeckStats();
+  updateUndoBtn();
+}
+
+function updateDeckGrid() {
+  const total = perRank(numDecks);
+  RANKS.forEach(r => {
+    const tot = total[r], rem = remaining[r];
+    const pct = rem / tot;
+    const remCls = pct <= 0 ? 'depleted' : pct <= 0.33 ? 'low' : 'normal';
+    const barCls = pct <= 0 ? 'depleted' : pct <= 0.33 ? 'low' : '';
+    const btnCls = pct <= 0 ? 'depleted' : pct <= 0.33 ? 'low' : '';
+    const remEl = document.getElementById('rem-' + r);
+    if (remEl) { remEl.textContent = rem; remEl.className = 'rank-btn-rem ' + remCls; }
+    const bar = document.getElementById('rbar-' + r);
+    if (bar) { bar.style.width = (pct*100).toFixed(0)+'%'; bar.className = 'rank-bar ' + barCls; }
+    const btn = document.getElementById('rankbtn-' + r);
+    if (btn) { btn.className = 'rank-btn ' + btnCls; }
+  });
+  updateDeckStats();
+  updateUndoBtn();
+  updateCountPanel();
+}
+
+function dealFromDeck(rank, forceDealer) {
+  if (remaining[rank] <= 0) return;
+  remaining[rank]--;
+  deckUndoStack.push(rank);
+  const isDealer = forceDealer === true || nextCardIsDealer;
+  const entry = { rank, ts: Date.now(), isDealer, roundEndedHere: false };
+  historyLog.push(entry);
+  if (nextCardIsDealer) {
+    nextCardIsDealer = false;
+    updateDealerTagBtn();
+  }
+  if (isDealer) {
+    currentRoundDealerCards.push(rank);
+    updateDealerProgress();
+  }
+  updateDeckGrid();
+  buildSelectors();
+  analyze();
+  if (isDealer) checkRoundEnd(entry);
+}
+
+function undoDeal() {
+  if (!deckUndoStack.length) return;
+  const rank = deckUndoStack.pop();
+  const entry = historyLog.pop();
+  const total = perRank(numDecks)[rank];
+  remaining[rank] = Math.min(total, remaining[rank] + 1);
+
+  if (entry) {
+    if (entry.roundEndedHere) {
+      const marker = roundMarkers.pop();
+      roundIndex--;
+      currentRoundDealerCards = marker ? marker.dealerCards.slice(0, -1) : [];
+      updateRoundCount();
+    } else if (entry.isDealer) {
+      currentRoundDealerCards.pop();
+    }
+  }
+  updateDealerProgress();
+  updateDeckGrid();
+  buildSelectors();
+  analyze();
+}
+
+function updateUndoBtn() {
+  const btn = document.getElementById('deck-undo-btn');
+  const last = document.getElementById('last-dealt');
+  if (!btn) return;
+  btn.disabled = deckUndoStack.length === 0;
+  if (deckUndoStack.length > 0) {
+    const r = deckUndoStack[deckUndoStack.length - 1];
+    last.innerHTML = `Last dealt: <b>${r}</b>`;
+  } else {
+    last.innerHTML = '';
+  }
+  updateDealtHistory();
+  const countEl = document.getElementById('history-count');
+  if (countEl) countEl.textContent = `Zaznamenaných kariet: ${historyLog.length}`;
+}
+
+function updateDealtHistory() {
+  const el = document.getElementById('dealt-history');
+  if (!el) return;
+  if (historyLog.length === 0) { el.innerHTML = ''; return; }
+  // Show up to 10 most recent, newest first
+  const recent = historyLog.slice(-10).reverse();
+  const pills = recent.map((entry, i) => {
+    const cls = [i === 0 ? 'newest' : i >= 5 ? 'older' : '', entry.isDealer ? 'dealer' : ''].join(' ').trim();
+    return `<div class="dealt-pill ${cls}">${entry.rank}</div>`;
+  }).join('');
+  el.innerHTML = `<div class="dealt-history-label">Last dealt</div>${pills}`;
+}
+
+// ── Export historie topanky do CSV ────────────────────────────────
+// Replayuje historyLog od zaciatku, aby pre kazdu kartu dopocital RC/TC/presny edge
+// PRESNE v tom momente, ako sa postupne odkryvala (nie len aktualny konecny stav).
+function exportHistory() {
+  if (historyLog.length === 0) {
+    alert('No cards recorded in this shoe yet.');
+    return;
+  }
+  const bankroll = document.getElementById('cp-bankroll').value || '';
+  const minBet   = document.getElementById('cp-minbet').value || '';
+  const kfracSel = document.getElementById('cp-kfrac');
+  const kfracLabel = kfracSel.options[kfracSel.selectedIndex].text;
+
+  const metaRows = [
+    ['SESSION METADATA'],
+    ['Export date', new Date().toLocaleString('en-GB')],
+    ['Number of decks', numDecks],
+    ['Dealer H17 (hit soft 17)', rules.h17 ? 'Yes' : 'No (S17)'],
+    ['DAS (double after split)', rules.das ? 'Yes' : 'No'],
+    ['RSA (resplit aces)', rules.rsa ? 'Yes' : 'No'],
+    ['Surrender', rules.ls ? 'Yes' : 'No'],
+    ['Early surrender', rules.es ? 'Yes' : 'No'],
+    ['Blackjack payout', rules.bj32 ? '3:2' : '6:5'],
+    ['Bankroll (EUR)', bankroll],
+    ['Min bet set in app (EUR)', minBet],
+    ['Kelly fraction', kfracLabel],
+    [],
+  ];
+
+  let rcHalves = 0, rcHiLo = 0, eorRaw = 0;
+  const rows = [[
+    'Order', 'Time', 'Card', 'Card recipient', 'Cards remaining',
+    'Wong Halves RC', 'Hi-Lo RC', 'True Count (active system)', 'Exact EOR edge (%)',
+    'Round #', 'Round end?', 'Dealer total (at round end)', 'Suggested bet for next round (EUR)'
+  ]];
+  const markerByIndex = {};
+  roundMarkers.forEach(m => { markerByIndex[m.historyIndex] = m; });
+
+  let curRound = 1;
+  historyLog.forEach((entry, i) => {
+    rcHalves += COUNT_SYSTEMS.halves.tags[entry.rank];
+    rcHiLo += COUNT_SYSTEMS.hilo.tags[entry.rank];
+    eorRaw += EOR[entry.rank];
+
+    const cardsDealt = i + 1;
+    const cardsLeftAtPoint = numDecks * 52 - cardsDealt;
+    const decksLeftAtPoint = Math.max(0.1, cardsLeftAtPoint / 52);
+    const tcActive = activeSystem === 'hilo' ? rcHiLo / decksLeftAtPoint : rcHalves / decksLeftAtPoint;
+    const exactEdgeAtPoint = -HOUSE_EDGE + eorRaw / decksLeftAtPoint;
+
+    const marker = markerByIndex[i];
+    const isRoundEnd = !!marker;
+
+    rows.push([
+      cardsDealt,
+      new Date(entry.ts).toLocaleString('en-GB'),
+      entry.rank,
+      entry.isDealer ? 'Dealer' : 'Player/other',
+      cardsLeftAtPoint,
+      rcHalves.toFixed(1),
+      rcHiLo.toFixed(1),
+      tcActive.toFixed(2),
+      exactEdgeAtPoint.toFixed(2),
+      curRound,
+      isRoundEnd ? 'Yes' : 'No',
+      isRoundEnd ? marker.dealerTotal : '',
+      isRoundEnd ? marker.suggestedBet : ''
+    ]);
+
+    if (isRoundEnd) curRound++;
+  });
+
+  const csv = metaRows.concat(rows).map(r => r.join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+  a.download = `blackjack-historia-${stamp}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function updateDeckStats() {
+  const total = Object.values(remaining).reduce((a,b)=>a+b,0);
+  const tens = remaining['10'];
+  const aces = remaining['A'];
+  const tenPct = total > 0 ? (tens/total*100).toFixed(1) : '0.0';
+  const acePct = total > 0 ? (aces/total*100).toFixed(1) : '0.0';
+  document.getElementById('deck-stats').innerHTML =
+    `<span>Cards left: <b>${total}</b></span>
+     <span>Tens: <b>${tens} (${tenPct}%)</b></span>
+     <span>Aces: <b>${aces} (${acePct}%)</b></span>
+     <span>Decks: <b>${(total/52).toFixed(2)}</b></span>`;
+}
+
+// ── Card selectors ───────────────────────────────────────────────
+let dealerZoneSide = 'right';
+try { dealerZoneSide = localStorage.getItem('dealerZoneSide') || 'right'; } catch(e) {}
+
+function applyDealerZoneSide() {
+  const grid = document.getElementById('deck-grid');
+  if (grid) grid.classList.toggle('zone-right', dealerZoneSide === 'right');
+  const leftBtn = document.getElementById('zone-side-left');
+  const rightBtn = document.getElementById('zone-side-right');
+  if (leftBtn) leftBtn.classList.toggle('on', dealerZoneSide === 'left');
+  if (rightBtn) rightBtn.classList.toggle('on', dealerZoneSide === 'right');
+}
+
+function setDealerZoneSide(side) {
+  dealerZoneSide = side;
+  try { localStorage.setItem('dealerZoneSide', side); } catch(e) {}
+  applyDealerZoneSide();
+  saveLastSettings();
+}
+
+function buildSelectors() {
+  buildSelector('player-selector', false);
+  buildSelector('dealer-selector', true);
+}
+
+function buildSelector(id, isDealer) {
+  const el = document.getElementById(id);
+  el.innerHTML = '';
+  RANKS.forEach(r => {
+    const btn = document.createElement('div');
+    btn.className = 'csel' + (remaining[r] === 0 ? ' zero' : '');
+    btn.textContent = r === '10' ? '10' : r;
+    btn.onclick = () => isDealer ? setDealer(r) : addPlayerCard(r);
+    el.appendChild(btn);
+  });
+}
+
+function addPlayerCard(r) {
+  playerCards.push(r);
+  buildSelectors();
+  renderHandDisplays();
+  analyze();
+}
+
+function setDealer(r) {
+  dealerCard = r;
+  buildSelectors();
+  renderHandDisplays();
+  analyze();
+}
+
+function removePlayerCard(idx) {
+  playerCards.splice(idx, 1);
+  buildSelectors();
+  renderHandDisplays();
+  analyze();
+}
+
+function removeDealer() {
+  if (!dealerCard) return;
+  dealerCard = null;
+  buildSelectors();
+  renderHandDisplays();
+  analyze();
+}
+
+function renderHandDisplays() {
+  // Player
+  const pd = document.getElementById('player-display');
+  pd.innerHTML = playerCards.length
+    ? playerCards.map((r,i) => `<div class="hcard">${r}<span class="remove" onclick="removePlayerCard(${i})">✕</span></div>`).join('')
+    : '<span style="color:var(--muted);font-size:12px;font-family:var(--mono)">— tap cards above —</span>';
+  
+  // Player total
+  const { hard, soft, isSoft } = handTotal(playerCards);
+  const totEl = document.getElementById('player-total');
+  if (playerCards.length) {
+    totEl.innerHTML = `Total: <b>${isSoft ? soft : hard}</b>${isSoft ? `<span class="soft">(soft / hard ${hard})</span>` : ''}`;
+  } else {
+    totEl.innerHTML = '—';
+  }
+
+  // Dealer
+  const dd = document.getElementById('dealer-display');
+  dd.innerHTML = dealerCard
+    ? `<div class="hcard dealer-card">${dealerCard}<span class="remove" onclick="removeDealer()">✕</span></div>`
+    : '<span style="color:var(--muted);font-size:12px;font-family:var(--mono)">— tap card above —</span>';
+}
+
+// ── Hand math ────────────────────────────────────────────────────
+function handTotal(cards) {
+  let hard = 0, aces = 0;
+  cards.forEach(r => { hard += VALS[r]; if (r === 'A') aces++; });
+  while (hard > 21 && aces > 0) { hard -= 10; aces--; }
+  const soft = hard; // already adjusted
+  // isSoft = has usable ace (counted as 11)
+  const isSoft = cards.includes('A') && hard <= 21 && hard !== cards.reduce((s,r)=>{
+    let v = VALS[r]; return s + (r==='A' ? 1 : v);
+  }, 0);
+  const hardRaw = cards.reduce((s,r) => s + (r==='A' ? 1 : VALS[r]), 0);
+  return { hard: soft, soft: soft, isSoft: (soft > hardRaw), hardRaw };
+}
+
+function isBusted(cards) { return handTotal(cards).hard > 21; }
+
+function isPair(cards) {
+  if (cards.length !== 2) return false;
+  const a = cards[0] === '10' ? '10' : cards[0];
+  const b = cards[1] === '10' ? '10' : cards[1];
+  return a === b;
+}
+
+function isBlackjack(cards) {
+  if (cards.length !== 2) return false;
+  const ranks = cards.map(r => r === 'A' ? 'A' : r === '10' ? '10' : 'other');
+  return ranks.includes('A') && ranks.includes('10');
+}
+
+// ── EV Engine — composition-dependent, conditioned on dealer hole card ─────
+// Core insight: dealer hole card AND player drawn cards both come from the same
+// remaining shoe. Enumerate the hole card first, then compute player EV from
+// the reduced shoe. This avoids double-counting card availability.
+
+function totalRemaining() {
+  return Object.values(remaining).reduce((a,b)=>a+b,0);
+}
+
+function handVal(cards) {
+  let total = 0, aces = 0;
+  for (const r of cards) { total += VALS[r]; if (r === 'A') aces++; }
+  while (total > 21 && aces > 0) { total -= 10; aces--; }
+  const hardTotal = cards.reduce((s,r) => s + (r==='A'?1:VALS[r]), 0);
+  return { total, isSoft: total !== hardTotal && total <= 21 };
+}
+
+function dealerMustHit(cards) {
+  const { total, isSoft } = handVal(cards);
+  if (total < 17) return true;
+  if (total > 17) return false;
+  return isSoft && rules.h17;
+}
+
+// Dealer outcome distribution from a given starting hand, drawing from rem
+function dealerDP(startCards, rem) {
+  const memo = new Map();
+  function dp(cards, r) {
+    const key = cards.join(',') + '/' + RANKS.map(x=>r[x]).join(',');
+    if (memo.has(key)) return memo.get(key);
+    const { total } = handVal(cards);
+    if (total > 21) {
+      const res = {bust:1,17:0,18:0,19:0,20:0,21:0}; memo.set(key,res); return res;
+    }
+    if (!dealerMustHit(cards)) {
+      const res = {bust:0,17:0,18:0,19:0,20:0,21:0}; res[total]=1; memo.set(key,res); return res;
+    }
+    const left = RANKS.reduce((s,x)=>s+r[x],0);
+    if (!left) {
+      const res = {bust:0,17:0,18:0,19:0,20:0,21:0}; res[total]=1; memo.set(key,res); return res;
+    }
+    const res = {bust:0,17:0,18:0,19:0,20:0,21:0};
+    for (const x of RANKS) {
+      if (!r[x]) continue;
+      const p = r[x]/left; const nr = Object.assign({},r); nr[x]--;
+      const sub = dp([...cards,x], nr);
+      for (const k of Object.keys(res)) res[k] += p*(sub[k]||0);
+    }
+    memo.set(key,res); return res;
+  }
+  return dp(startCards, rem);
+}
+
+function evStand(playerTotal, dOut) {
+  let ev = (dOut.bust||0) * 1;
+  for (const ds of [17,18,19,20,21]) {
+    const p = dOut[ds]||0; if (!p) continue;
+    if (playerTotal > ds)      ev += p *  1;
+    else if (playerTotal < ds) ev += p * -1;
+  }
+  return ev;
+}
+function evStandCards(cards, dOut) {
+  const {total} = handVal(cards); return total > 21 ? -1 : evStand(total, dOut);
+}
+
+function evHit(cards, rem, dOut, depth) {
+  if (depth > 10) return evStandCards(cards, dOut);
+  const left = RANKS.reduce((s,r)=>s+rem[r],0);
+  if (!left) return evStandCards(cards, dOut);
+  let ev = 0;
+  for (const r of RANKS) {
+    if (!rem[r]) continue;
+    const p = rem[r]/left;
+    const nc = [...cards,r]; const nr = Object.assign({},rem); nr[r]--;
+    const {total} = handVal(nc);
+    if (total > 21) ev += p * -1;
+    else ev += p * Math.max(evStandCards(nc,dOut), evHit(nc,nr,dOut,depth+1));
+  }
+  return ev;
+}
+
+function evDouble(cards, rem, dOut) {
+  const left = RANKS.reduce((s,r)=>s+rem[r],0); if (!left) return -2;
+  let ev = 0;
+  for (const r of RANKS) {
+    if (!rem[r]) continue;
+    const p = rem[r]/left;
+    const nc = [...cards,r]; const nr = Object.assign({},rem); nr[r]--;
+    const {total} = handVal(nc);
+    ev += total > 21 ? p*-2 : p*evStandCards(nc,dOut)*2;
+  }
+  return ev;
+}
+
+function evSplit(splitRank, rem, dOut) {
+  const left = RANKS.reduce((s,r)=>s+rem[r],0); if (!left) return -2;
+  let handEV = 0;
+  for (const r of RANKS) {
+    if (!rem[r]) continue;
+    const p = rem[r]/left;
+    const nc = [splitRank, r]; const nr = Object.assign({},rem); nr[r]--;
+    const {total} = handVal(nc);
+    if (total > 21) { handEV += p*-1; continue; }
+    let best = Math.max(evStandCards(nc,dOut), evHit(nc,nr,dOut,0));
+    if (rules.das) best = Math.max(best, evDouble(nc,nr,dOut));
+    handEV += p * best;
+  }
+  return handEV * 2;
+}
+
+function evInsurance(rem) {
+  const left = RANKS.reduce((s,r)=>s+rem[r],0); if (!left) return -0.5;
+  return (rem['10']/left)*2 - (1 - rem['10']/left);
+}
+
+// Master EV function
+// remShoe = remaining deck AFTER player cards AND dealer upcard removed.
+// Method: compute averaged dealer outcome distribution (marginalising over all possible
+// hole cards weighted by probability), then compute player EVs against that distribution.
+// This matches WoO methodology and gives correct absolute EV values.
+function computeEVs(pCards, upcard, remShoe) {
+  const left = RANKS.reduce((s,r)=>s+remShoe[r],0);
+  const isFirstTwo = pCards.length === 2;
+  const splitRank = isFirstTwo && (
+    (pCards[0]==='10'?'10':pCards[0]) === (pCards[1]==='10'?'10':pCards[1])
+  ) ? (pCards[0]==='10'?'10':pCards[0]) : null;
+
+  // Step 1: marginalise dealer outcomes over all possible hole cards
+  // Also track dealer BJ probability separately
+  const dOutAvg = {bust:0,17:0,18:0,19:0,20:0,21:0};
+  let bjProb = 0;
+
+  for (const holeRank of RANKS) {
+    if (!remShoe[holeRank]) continue;
+    const prob = remShoe[holeRank] / left;
+    const remH = Object.assign({}, remShoe); remH[holeRank]--;
+    const {total: dt} = handVal([upcard, holeRank]);
+    if (dt === 21) {
+      // Dealer natural BJ — counts as dealer 21 in outcome distribution
+      dOutAvg[21] += prob;
+      bjProb += prob;
+      continue;
+    }
+    const sub = dealerDP([upcard, holeRank], remH);
+    for (const k of Object.keys(dOutAvg)) dOutAvg[k] += prob * (sub[k]||0);
+  }
+
+  // Step 2: compute player EVs using the averaged dealer outcomes
+  // Player draws from remShoe (hole card is unknown, treated as still in shoe)
+  const {total: pt} = handVal(pCards);
+
+  // For stand: dealer BJ beats player non-BJ
+  const standEV = evStand(pt, dOutAvg) - bjProb * (1 - 1); // bjProb already in dOutAvg[21]
+  // Note: evStand treats dealer 21 as a loss when pt < 21, which is correct for BJ too
+
+  const totals = {
+    stand: evStand(pt, dOutAvg),
+    hit:   evHit(pCards, {...remShoe}, dOutAvg, 0),
+  };
+  if (isFirstTwo) totals.double = evDouble(pCards, {...remShoe}, dOutAvg);
+  if (splitRank)  totals.split  = evSplit(splitRank, {...remShoe}, dOutAvg);
+
+  totals._dOutAvg = dOutAvg; // expose for probability bars
+  return totals;
+}
+
+// ── Insurance Advisor ─────────────────────────────────────────────
+// Insurance pays 2:1 on a side bet of 0.5 units.
+// EV = P(dealer BJ) × 2 − P(no dealer BJ) × 1
+// = P(ten) × 2 − (1 − P(ten)) = 3×P(ten) − 1
+// Break-even: P(ten) = 1/3 ≈ 33.33%
+function renderInsuranceCard() {
+  const el = document.getElementById('insurance-output');
+  if (dealerCard !== 'A') { el.innerHTML = ''; return; }
+
+  const rem = { ...remaining };
+  const left = RANKS.reduce((s,r) => s + rem[r], 0);
+  if (!left) { el.innerHTML = ''; return; }
+
+  const tens   = rem['10'];
+  const tenPct = tens / left;           // P(dealer has 10-value hole card)
+  const ev     = tenPct * 2 - (1 - tenPct); // = 3×tenPct − 1
+  const breakEven = 1 / 3;             // 33.33%
+  const take   = ev >= 0;
+
+  // How far above/below break-even (in percentage points)
+  const diff = ((tenPct - breakEven) * 100).toFixed(1);
+  const diffStr = diff > 0 ? `+${diff}` : `${diff}`;
+
+  // Tens needed to break even
+  const tensNeeded = Math.ceil(left * breakEven);
+
+  const evCls   = ev >= 0 ? 'pos' : 'neg';
+  const cardCls = take ? 'take' : 'skip';
+  const verdictLabel = take
+    ? '🛡 TAKE INSURANCE'
+    : '✗ SKIP INSURANCE';
+
+  // Bar: fill = tenPct, threshold marker at 33.33%
+  const fillPct      = Math.min(100, (tenPct * 100)).toFixed(1);
+  const thresholdPct = (breakEven * 100).toFixed(1);
+
+  el.innerHTML = `
+    <div class="ins-card ${cardCls}">
+      <div class="ins-header">
+        <div class="ins-verdict ${cardCls}">${verdictLabel}</div>
+        <div class="ins-ev-badge">
+          <b class="${evCls}">${ev >= 0 ? '+' : ''}${ev.toFixed(4)}</b>
+          EV per unit
+        </div>
+      </div>
+      <div class="ins-body">
+        <div class="ins-stat-row">
+          <div class="ins-stat">
+            <div class="ins-stat-val ${take ? 'good' : 'bad'}">${(tenPct*100).toFixed(1)}%</div>
+            <div class="ins-stat-lbl">Tens in shoe</div>
+          </div>
+          <div class="ins-stat">
+            <div class="ins-stat-val">33.3%</div>
+            <div class="ins-stat-lbl">Break-even</div>
+          </div>
+          <div class="ins-stat">
+            <div class="ins-stat-val ${take ? 'good' : 'bad'}">${diffStr}pp</div>
+            <div class="ins-stat-lbl">vs break-even</div>
+          </div>
+          <div class="ins-stat">
+            <div class="ins-stat-val">${tens}/${left}</div>
+            <div class="ins-stat-lbl">Tens / cards left</div>
+          </div>
+        </div>
+
+        <div class="ins-bar-section">
+          <div class="ins-bar-label">Ten-value density in remaining shoe</div>
+          <div class="ins-bar-track">
+            <div class="ins-bar-fill ten" style="width:${fillPct}%"></div>
+            <div class="ins-bar-threshold" style="left:${thresholdPct}%"></div>
+          </div>
+          <div class="ins-threshold-label">
+            <span>0%</span>
+            <span style="color:var(--red)">▲ 33.3% (break-even)</span>
+            <span>100%</span>
+          </div>
+        </div>
+
+        <div class="ins-note">
+          ${take
+            ? `<span class="ins-take-txt">Take insurance.</span> The shoe is ten-rich (<b>${(tenPct*100).toFixed(1)}%</b> tens vs 33.3% needed). Dealer BJ probability: <b>${(tenPct*100).toFixed(1)}%</b>. You need <b>${tensNeeded}</b> tens among ${left} remaining cards to break even — there are <b>${tens}</b>.`
+            : `<span class="ins-skip-txt">Skip insurance.</span> The shoe is ten-poor (<b>${(tenPct*100).toFixed(1)}%</b> tens, need >33.3%). Only <b>${tens}</b> tens remain out of ${left} cards (need ≥${tensNeeded} to break even). Taking insurance is a losing side bet here.`
+          }
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Main analysis ────────────────────────────────────────────────
+function analyze() {
+  if (playerCards.length < 2 || !dealerCard) {
+    document.getElementById('advice-output').innerHTML = `
+      <div class="waiting">
+        <div class="big">♠</div>
+        ${playerCards.length < 2 ? 'Add at least 2 cards to your hand' : 'Select dealer upcard'}
+      </div>`;
+    return;
+  }
+
+  // Check for player blackjack
+  if (isBlackjack(playerCards)) {
+    const bjPay = rules.bj32 ? 1.5 : 1.2;
+    document.getElementById('advice-output').innerHTML = `
+      <div class="advice-card">
+        <div class="advice-header">
+          <div class="advice-action stand">BLACKJACK!</div>
+          <div class="advice-ev"><b class="pos">+${bjPay.toFixed(2)}</b>EV per unit</div>
+        </div>
+        <div class="reason-box">You have a natural blackjack. Collect ${rules.bj32?'3:2':'6:5'} payout.${dealerCard==='A'?' Consider insurance side bet (see below)':''}</div>
+      </div>`;
+    renderInsuranceCard();
+    return;
+  }
+
+  const { total: playerHandTotal, isSoft } = handVal(playerCards);
+
+  if (playerHandTotal > 21) {
+    document.getElementById('advice-output').innerHTML = `
+      <div class="advice-card">
+        <div class="advice-header">
+          <div class="advice-action surrender">BUST — ${playerHandTotal}</div>
+          <div class="advice-ev"><b class="neg">−1.00</b>EV per unit</div>
+        </div>
+        <div class="reason-box">Hand is busted. Clear and start new hand.</div>
+      </div>`;
+    renderInsuranceCard();
+    return;
+  }
+
+  // remaining = shoe with player cards + dealer upcard already removed.
+  // computeEVs enumerates all possible hole cards from remaining,
+  // then computes player EV from the further-reduced shoe for each scenario.
+  const evs = computeEVs(playerCards, dealerCard, { ...remaining });
+
+  // Surrender (fixed EV, not composition-dependent)
+  if ((rules.ls || rules.es) && playerCards.length === 2) {
+    evs.surrender = -0.5;
+  }
+
+  // Insurance side bet
+  let insEV = null;
+  if (dealerCard === 'A' && playerCards.length === 2) {
+    insEV = evInsurance({ ...remaining });
+  }
+
+  // Best action
+  const best = Object.entries(evs).reduce((a,b) => b[1] > a[1] ? b : a);
+  const bestAction = best[0];
+  const bestEV = best[1];
+
+  // Dealer outcome probabilities for probability bars — already computed inside computeEVs
+  const dProbsAvg = evs._dOutAvg;
+  delete evs._dOutAvg; // remove before iterating evs for output rows
+  const {total: hard} = handVal(playerCards);
+  const winP  = (dProbsAvg.bust||0) + [17,18,19,20,21].reduce((s,d)=>s+(hard>d?(dProbsAvg[d]||0):0),0);
+  const pushP = [17,18,19,20,21].reduce((s,d)=>s+(hard===d?(dProbsAvg[d]||0):0),0);
+  const loseP = 1 - winP - pushP;
+
+  // Generate output
+  const actionLabels = {
+    hit: 'HIT', stand: 'STAND', double: 'DOUBLE DOWN',
+    split: 'SPLIT', surrender: 'SURRENDER', insurance: 'TAKE INSURANCE'
+  };
+  const actionColors = {
+    hit: 'hit', stand: 'stand', double: 'double', split: 'split', surrender: 'surrender'
+  };
+
+  const evRowsHtml = Object.entries(evs)
+    .sort((a,b) => b[1]-a[1])
+    .map(([action, ev], i) => {
+      const isBest = action === bestAction;
+      const isWorst = i === Object.entries(evs).length - 1;
+      const cls = isBest ? 'best' : isWorst ? 'worst' : '';
+      const valCls = ev > 0 ? 'pos' : ev < -0.1 ? 'neg' : 'neu';
+      return `<div class="ev-row ${cls}">
+        <div class="ev-label">${actionLabels[action]||action.toUpperCase()}</div>
+        <div class="ev-val ${valCls}">${ev >= 0 ? '+' : ''}${ev.toFixed(4)}</div>
+      </div>`;
+    }).join('');
+
+  // Reason text
+  function reasonText() {
+    const tenPct = (remaining['10'] / totalRemaining() * 100).toFixed(0);
+    const acePct = (remaining['A'] / totalRemaining() * 100).toFixed(0);
+    const dealerBustPct = ((dProbsAvg.bust||0) * 100).toFixed(1);
+    const leftShoe2 = RANKS.reduce((s,r)=>s+remaining[r],0);
+    const bjProb = dealerCard==='A' ? (remaining['10']/leftShoe2) : dealerCard==='10' ? (remaining['A']/leftShoe2) : 0;
+    const parts = [];
+    parts.push(`Dealer bust probability: <b>${dealerBustPct}%</b>.`);
+    parts.push(`Deck: <b>${tenPct}%</b> tens, <b>${acePct}%</b> aces.`);
+    if (dealerCard === 'A') parts.push(`Dealer BJ probability: <b>${(bjProb*100).toFixed(1)}%</b>.`);
+    if (bestAction === 'surrender') parts.push(`Surrendering saves <b>${(0.5 - Math.max(evs.hit||evs.stand, evs.stand)).toFixed(4)}</b> units vs best alternative.`);
+    if (bestAction === 'split') parts.push(`Each split hand EV exceeds playing the pair together.`);
+    if (bestAction === 'double') parts.push(`Doubling maximises profit — one-card distribution favours player.`);
+    if (insEV !== null) parts.push(`Insurance EV: <b>${insEV >= 0 ? '+' : ''}${insEV.toFixed(4)}</b> — ${insEV >= 0 ? 'take it (ten-rich shoe)' : 'skip it'}.`);
+    return parts.join(' ');
+  }
+
+  document.getElementById('advice-output').innerHTML = `
+    <div class="advice-card">
+      <div class="advice-header">
+        <div class="advice-action ${actionColors[bestAction]||'neutral'}">${actionLabels[bestAction]||bestAction.toUpperCase()}</div>
+        <div class="advice-ev">
+          <b class="${bestEV >= 0 ? 'pos' : 'neg'}">${bestEV >= 0 ? '+' : ''}${bestEV.toFixed(4)}</b>
+          EV per unit bet
+        </div>
+      </div>
+      <div class="ev-breakdown">${evRowsHtml}</div>
+      <div class="prob-section">
+        <div class="prob-title">Dealer outcome if you stand (${hard})</div>
+        <div class="prob-row"><div class="prob-label">You win</div><div class="prob-bar-wrap"><div class="prob-fill win" style="width:${(winP*100).toFixed(1)}%"></div></div><div class="prob-pct">${(winP*100).toFixed(1)}%</div></div>
+        <div class="prob-row"><div class="prob-label">Push</div><div class="prob-bar-wrap"><div class="prob-fill push" style="width:${(pushP*100).toFixed(1)}%"></div></div><div class="prob-pct">${(pushP*100).toFixed(1)}%</div></div>
+        <div class="prob-row"><div class="prob-label">You lose</div><div class="prob-bar-wrap"><div class="prob-fill lose" style="width:${(loseP*100).toFixed(1)}%"></div></div><div class="prob-pct">${(loseP*100).toFixed(1)}%</div></div>
+        <div class="prob-row"><div class="prob-label">Dealer busts</div><div class="prob-bar-wrap"><div class="prob-fill win" style="width:${((dProbsAvg.bust||0)*100).toFixed(1)}%"></div></div><div class="prob-pct">${((dProbsAvg.bust||0)*100).toFixed(1)}%</div></div>
+        ${hard < 17 && hard <= 21 ? `<div class="prob-note">Push = 0 % zámerne: dealer ťahá, kým nemá aspoň 17, takže <b>nikdy nekončí na ${hard}</b>. Ak zostaneš stáť pod 17, remíza je nemožná — buď dealer prepáli, alebo ťa prebije. Remíza je v hre až od 17 vyššie.</div>` : ''}
+      </div>
+      <div class="reason-box">${reasonText()}</div>
+    </div>`;
+  renderInsuranceCard();
+}
+
+// ── Nastavenia: automaticke pamatanie + profily ─────────────────
+const LS_LAST = 'bjAdvisor.lastSettings';
+const LS_PROFILES = 'bjAdvisor.profiles';
+const PROFILE_SLOTS = 3;
+const INPUT_IDS = ['cp-bankroll','cp-minbet','cp-kfrac','cp-boxes','cp-hands','cp-ror-edge','cp-ror-avgbet','cp-ror-spread'];
+let settingsReady = false; // pocas inicializacie neukladat (aby sa neprepisalo ulozene defaultmi)
+
+function lsGet(k) { try { return JSON.parse(localStorage.getItem(k)); } catch(e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e) { return false; } }
+
+function getSettings() {
+  const inputs = {};
+  INPUT_IDS.forEach(id => { const el = document.getElementById(id); if (el) inputs[id] = el.value; });
+  return { numDecks, rules: { ...rules }, activeSystem, dealerZoneSide, inputs };
+}
+
+// Aplikuje nastavenia na UI. Pocet balickov sa meni len ak je iny (zmena resetuje topanku).
+function applySettings(st, isInit) {
+  if (!st) return;
+  if (st.rules) Object.keys(rules).forEach(k => { if (typeof st.rules[k] === 'boolean') rules[k] = st.rules[k]; });
+  document.querySelectorAll('.rule-toggle').forEach(el => {
+    const key = el.id.replace('r-',''); if (rules[key] !== undefined) el.classList.toggle('on', rules[key]);
+  });
+  if (st.inputs) INPUT_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && st.inputs[id] !== undefined && st.inputs[id] !== '') el.value = st.inputs[id];
+  });
+  if (st.dealerZoneSide === 'left' || st.dealerZoneSide === 'right') {
+    dealerZoneSide = st.dealerZoneSide;
+    try { localStorage.setItem('dealerZoneSide', dealerZoneSide); } catch(e) {}
+  }
+  if (st.activeSystem && (st.activeSystem === 'exact' || COUNT_SYSTEMS[st.activeSystem])) {
+    activeSystem = st.activeSystem;
+    document.querySelectorAll('.sys-btn').forEach(b => b.classList.toggle('active', b.dataset.sys === activeSystem));
+  }
+  if ([1,2,6,8].includes(st.numDecks)) {
+    document.querySelectorAll('.hbtn').forEach(b => b.classList.remove('active'));
+    const btn = document.getElementById('btn-' + st.numDecks + 'deck');
+    if (btn) btn.classList.add('active');
+    if (isInit) numDecks = st.numDecks;
+    else if (st.numDecks !== numDecks) { numDecks = st.numDecks; resetDeck(); }
+  }
+  if (!isInit) { applyDealerZoneSide(); updateCountPanel(); analyze(); }
+}
+
+function saveLastSettings() {
+  if (!settingsReady) return;
+  lsSet(LS_LAST, getSettings());
+}
+
+function getProfiles() {
+  let p = lsGet(LS_PROFILES);
+  if (!Array.isArray(p)) p = [];
+  for (let i = 0; i < PROFILE_SLOTS; i++) if (!p[i]) p[i] = { name: 'Profil ' + (i+1), settings: null };
+  return p;
+}
+
+function renderProfileSelect(selIdx) {
+  const sel = document.getElementById('prof-select');
+  if (!sel) return;
+  const cur = selIdx !== undefined ? selIdx : (sel.selectedIndex >= 0 ? sel.selectedIndex : 0);
+  sel.innerHTML = getProfiles().map((p, i) =>
+    `<option value="${i}">${p.name.replace(/</g,'&lt;')}${p.settings ? '' : ' (prázdny)'}</option>`).join('');
+  sel.selectedIndex = cur;
+}
+
+function setProfStatus(html) {
+  const el = document.getElementById('prof-status');
+  if (el) el.innerHTML = html;
+}
+
+function saveProfile() {
+  const i = document.getElementById('prof-select').selectedIndex;
+  const p = getProfiles();
+  if (p[i].settings && !confirm(`Prepísať „${p[i].name}" aktuálnymi nastaveniami?`)) return;
+  p[i].settings = getSettings();
+  if (!lsSet(LS_PROFILES, p)) { alert('Prehliadač neumožňuje ukladanie (súkromné okno?).'); return; }
+  renderProfileSelect(i);
+  setProfStatus(`Uložené do <b>${p[i].name}</b>`);
+}
+
+function loadProfile() {
+  const i = document.getElementById('prof-select').selectedIndex;
+  const p = getProfiles()[i];
+  if (!p.settings) { alert(`„${p.name}" je prázdny — najprv nastav kalkulačku a daj „Uložiť sem".`); return; }
+  if (p.settings.numDecks !== numDecks && historyLog.length > 0 &&
+      !confirm(`Profil má ${p.settings.numDecks} balíčkov — zmena vynuluje aktuálnu topánku (${historyLog.length} kariet). Pokračovať?`)) return;
+  applySettings(p.settings, false);
+  saveLastSettings();
+  setProfStatus(`Načítaný <b>${p.name}</b>`);
+}
+
+function renameProfile() {
+  const i = document.getElementById('prof-select').selectedIndex;
+  const p = getProfiles();
+  const name = prompt('Nový názov profilu:', p[i].name);
+  if (!name || !name.trim()) return;
+  p[i].name = name.trim().slice(0, 30);
+  lsSet(LS_PROFILES, p);
+  renderProfileSelect(i);
+}
+
+// ── Init ─────────────────────────────────────────────────────────
+applySettings(lsGet(LS_LAST), true); // obnovit posledne nastavenia (ak existuju)
+renderProfileSelect(0);
+initDeck();
+buildDeckGrid();
+applyDealerZoneSide();
+buildSelectors();
+renderHandDisplays();
+updateCountPanel();
+updateDealerTagBtn();
+updateRoundCount();
+settingsReady = true;
+saveLastSettings();
+
+// Sync rule toggles
+document.querySelectorAll('.rule-toggle').forEach(el => {
+  const key = el.id.replace('r-','');
+  if (rules[key] !== undefined) el.classList.toggle('on', rules[key]);
+});
+
+</script>
+</body>
+</html>

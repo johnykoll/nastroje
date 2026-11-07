@@ -1,5 +1,9 @@
-# Surebet kalkulačka
+# Nástroje Surebety.blog
 
-Bezplatná surebet kalkulačka pre [surebety.blog](https://surebety.blog/).
+Bezplatné kalkulačky pre [surebety.blog](https://surebety.blog/):
 
-Naživo: https://johnykoll.github.io/surebet-kalkulacka/
+- `surebet/` – surebet kalkulačka (vklad na jednu stranu, provízia burzy, 2–4 výsledky)
+- `value/` – value bet kalkulačka „Podať?“ (Value, Arbitráž, AKO)
+- `blackjack/` – blackjack tréner (stratégia, počítanie kariet, Kelly, risk of ruin)
+
+Naživo: https://johnykoll.github.io/nastroje/
