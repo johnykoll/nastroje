@@ -27,13 +27,65 @@
   --purple: #a29bfe;
   --mono: 'Space Mono', monospace;
   --sans: 'DM Sans', sans-serif;
+  --pos-bg: var(--pos-bg);
+  --neg-bg: var(--neg-bg);
+  --warn-bg: var(--warn-bg);
+  --neg-text: var(--neg-text);
+  --p1: #00d2d3;
+  --p2: #a29bfe;
+  --p3: #ff6b9d;
+  --page-bg: var(--bg);
 }
+
+/* ── Skiny (motívy) ── */
+:root[data-skin="felt"] {
+  --bg:#06120a; --surface:#0b2214; --surface2:#103019; --border:#1b4227; --border2:#285a37;
+  --text:#eef5e8; --muted:#86a98f; --dim:#3d6148;
+  --green:#5ee08f; --green2:#2fae62; --red:#ff5a5f; --amber:#f2c14e; --cyan:#7fdbca; --purple:#c3b1ff;
+  --pos-bg:#0e3a1f; --neg-bg:#2a0f10; --warn-bg:#2b230c; --neg-text:#ffb3b5;
+  --p1:#7fdbca; --p2:#c3b1ff; --p3:#ff8fb1;
+  --page-bg: radial-gradient(ellipse at 50% 0%, #11391f 0%, #06120a 70%);
+}
+:root[data-skin="vegas"] {
+  --bg:#120607; --surface:#1d0b0d; --surface2:#2a1013; --border:#3f1a1e; --border2:#5f2a2f;
+  --text:#f7ead2; --muted:#b5927c; --dim:#6b4038;
+  --green:#6ee7a0; --green2:#2fa866; --red:#ff4d5e; --amber:#ffcf4a; --cyan:#5ad1e6; --purple:#d7a6ff;
+  --pos-bg:#0f2a19; --neg-bg:#320c10; --warn-bg:#33240a; --neg-text:#ffb0b8;
+  --p1:#5ad1e6; --p2:#d7a6ff; --p3:#ff7aa8;
+  --page-bg: radial-gradient(ellipse at 50% -10%, #3a1016 0%, #120607 65%);
+}
+:root[data-skin="neon"] {
+  --bg:#07040f; --surface:#0f0a1f; --surface2:#170f2e; --border:#2a1d4d; --border2:#40306f;
+  --text:#f1eaff; --muted:#8f84bb; --dim:#463a70;
+  --green:#39ff9f; --green2:#14c97a; --red:#ff3d7f; --amber:#ffe14d; --cyan:#29f0ff; --purple:#c77dff;
+  --pos-bg:#06261a; --neg-bg:#2a0618; --warn-bg:#2a2408; --neg-text:#ff9fc3;
+  --p1:#29f0ff; --p2:#c77dff; --p3:#ff5ec4;
+  --page-bg: linear-gradient(160deg, #0d0620 0%, #07040f 55%, #120420 100%);
+}
+:root[data-skin="midnight"] {
+  --bg:#060b16; --surface:#0c1424; --surface2:#121d33; --border:#1d2b47; --border2:#2a3c60;
+  --text:#e6edf9; --muted:#7a8cae; --dim:#3a4a6a;
+  --green:#34d399; --green2:#10b981; --red:#f87171; --amber:#fbbf24; --cyan:#38bdf8; --purple:#a78bfa;
+  --pos-bg:#06261d; --neg-bg:#2a0d12; --warn-bg:#2a210a; --neg-text:var(--neg-text);
+  --p1:#38bdf8; --p2:#a78bfa; --p3:#f472b6;
+}
+:root[data-skin="light"] {
+  --bg:#f3f1ea; --surface:#ffffff; --surface2:#f3f1ea; --border:#e0dccf; --border2:#cdc7b6;
+  --text:#1d1d24; --muted:#6b6878; --dim:#bdb8aa;
+  --green:#0f8a4a; --green2:#16a35a; --red:#d62839; --amber:#c27400; --cyan:#0a8f95; --purple:#6c5ce7;
+  --pos-bg:#e3f5ea; --neg-bg:#fbe7e9; --warn-bg:#fdf1dc; --neg-text:#b3202f;
+  --p1:#0a8f95; --p2:#6c5ce7; --p3:#d6336c;
+}
+:root[data-skin="light"] .hbtn.active,
+:root[data-skin="light"] .sys-btn.active { color:#fff; }
+.skin-select { margin-left: 4px; max-width: 150px; }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
   font-family: var(--sans);
-  background: var(--bg);
+  background: var(--page-bg);
+  background-attachment: fixed;
   color: var(--text);
   min-height: 100vh;
   display: flex;
@@ -100,7 +152,8 @@ header {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 10px 4px;
+  padding: 24px 2px;
+  min-height: 90px;
   background: var(--surface2);
   border: 1px solid var(--border2);
   border-radius: 8px;
@@ -111,41 +164,38 @@ header {
   position: relative;
   overflow: hidden;
 }
-.rank-dealer-zone {
+.rank-zone {
+  --zc: var(--amber);
   position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 38%;
-  height: 38%;
-  min-width: 20px;
-  min-height: 20px;
+  width: 48%;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255,176,32,0.10);
-  border-top: 1px solid rgba(255,176,32,0.35);
-  border-right: 1px solid rgba(255,176,32,0.35);
-  border-radius: 0 10px 0 7px;
-  color: var(--amber);
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   line-height: 1;
+  color: var(--zc);
+  background: color-mix(in srgb, var(--zc) 13%, transparent);
+  border: 0 solid color-mix(in srgb, var(--zc) 45%, transparent);
   cursor: pointer;
   touch-action: manipulation;
   z-index: 2;
   transition: background .08s, transform .06s;
 }
-.rank-dealer-zone:active { transform: scale(0.82); background: rgba(255,176,32,0.4); }
-.rank-btn.depleted .rank-dealer-zone { pointer-events: none; }
-.rank-btn.dealer-armed { border-color: var(--amber); box-shadow: inset 0 0 0 1px var(--amber); }
-#deck-grid.zone-right .rank-dealer-zone {
-  left: auto;
-  right: 0;
-  border-right: none;
-  border-left: 1px solid rgba(255,176,32,0.35);
-  border-radius: 10px 0 7px 0;
-}
+.rank-zone:active { transform: scale(0.84); background: color-mix(in srgb, var(--zc) 45%, transparent); }
+.rank-zone.zd  { --zc: var(--amber); }
+.rank-zone.zp1 { --zc: var(--p1); }
+.rank-zone.zp2 { --zc: var(--p2); }
+.rank-zone.zp3 { --zc: var(--p3); }
+.z-tl { top: 0; left: 0;    border-width: 0 1px 1px 0; border-radius: 7px 0 8px 0; }
+.z-tr { top: 0; right: 0;   border-width: 0 0 1px 1px; border-radius: 0 7px 0 8px; }
+.z-bl { bottom: 0; left: 0; border-width: 1px 1px 0 0; border-radius: 0 8px 0 7px; }
+.z-br { bottom: 0; right: 0;border-width: 1px 0 0 1px; border-radius: 8px 0 7px 0; }
+.rank-btn.depleted .rank-zone { pointer-events: none; }
+.rank-btn.flash { border-color: var(--flash, var(--amber)); box-shadow: inset 0 0 0 2px var(--flash, var(--amber)); }
+.rank-btn-label { font-size: 20px !important; }
 .zone-side-row {
   display: flex;
   align-items: center;
@@ -170,7 +220,7 @@ header {
   touch-action: manipulation;
   letter-spacing: .04em;
 }
-.zone-side-btn.on { background: #1a1200; color: var(--amber); border-color: var(--amber); }
+.zone-side-btn.on { background: var(--warn-bg); color: var(--amber); border-color: var(--amber); }
 .rank-btn:active { transform: scale(0.93); background: var(--dim); }
 .rank-btn.depleted { opacity: 0.35; pointer-events: none; }
 .rank-btn.low { border-color: #92400e; }
@@ -218,8 +268,8 @@ header {
   padding: 7px 14px;
   border-radius: 6px;
   border: 1px solid #3f1212;
-  background: #1a0808;
-  color: #fca5a5;
+  background: var(--neg-bg);
+  color: var(--neg-text);
   cursor: pointer;
   touch-action: manipulation;
   letter-spacing: .04em;
@@ -266,23 +316,131 @@ header {
 .dealt-pill.older {
   opacity: 0.55;
 }
-.dealt-pill.dealer {
-  background: rgba(0, 210, 211, 0.16);
-  position: relative;
-}
-.dealt-pill.dealer::after {
-  content: 'D';
+.dealt-pill[data-tag] { position: relative; }
+.dealt-pill[data-tag]::after {
+  content: attr(data-tag);
   position: absolute;
   top: -7px;
-  right: -5px;
-  background: var(--cyan);
-  color: #001318;
-  font-size: 9px;
+  right: -6px;
+  background: var(--tagc, var(--amber));
+  color: #000;
+  font-size: 8.5px;
   font-weight: 800;
-  padding: 1px 4px;
+  padding: 1px 3px;
   border-radius: 4px;
   line-height: 1.3;
 }
+
+/* ── Nálada balíčka: bubliny pri prekročení + trvalý režim ── */
+.tc-toast { position: fixed; left: 50%; top: 84px; z-index: 100; pointer-events: none;
+  padding: 14px 18px; border-radius: 14px; font-family: var(--sans); font-weight: 700; font-size: 15px;
+  line-height: 1.35; text-align: center; width: max-content; max-width: 88vw; }
+.tc-toast small { display: block; font-weight: 500; font-size: 12px; opacity: .85; margin-top: 3px; }
+.tc-toast.up { background: linear-gradient(135deg, #ffc94d, #ff7a3d); color: #2a1200;
+  box-shadow: 0 10px 30px #ff7a3d66, 0 0 0 2px #ffe3a8; animation: toastUp 3.2s ease forwards; }
+.tc-toast.down { background: linear-gradient(135deg, #dbeafe, #c7d7fb); color: #14244a;
+  box-shadow: 0 10px 26px #4a6fd055, 0 0 0 2px #eef4ff; animation: toastDown 3.4s ease forwards; }
+@keyframes toastUp {
+  0% { opacity: 0; transform: translate(-50%, -24px) scale(.85); }
+  10% { opacity: 1; transform: translate(-50%, 0) scale(1.08); }
+  16% { transform: translate(-50%, 0) scale(.97); }
+  22% { transform: translate(-50%, 0) scale(1.02); }
+  28%, 82% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -14px) scale(.96); }
+}
+@keyframes toastDown {
+  0% { opacity: 0; transform: translate(-50%, -10px); }
+  12% { opacity: 1; transform: translate(-50%, 0) rotate(0); }
+  20% { transform: translate(-50%, 0) rotate(-1.5deg); }
+  28% { transform: translate(-50%, 0) rotate(1.5deg); }
+  36%, 84% { opacity: 1; transform: translate(-50%, 0) rotate(0); }
+  100% { opacity: 0; transform: translate(-50%, 8px); }
+}
+.tc-burst { position: fixed; left: 50%; top: 110px; z-index: 99; pointer-events: none; font-size: 20px;
+  animation: burst 1.6s cubic-bezier(.2,.7,.3,1) forwards; }
+@keyframes burst {
+  0% { opacity: 0; transform: translate(-50%, 0) scale(.4); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), var(--dy)) scale(1.1) rotate(var(--rot)); }
+}
+.tc-drift { position: fixed; top: 60px; z-index: 99; pointer-events: none; font-size: 16px; opacity: 0;
+  animation: drift 3s ease-in forwards; }
+@keyframes drift { 15% { opacity: .9; } 100% { opacity: 0; transform: translateY(220px) rotate(40deg); } }
+.tc-in { width: 58px; padding: 5px 6px; border-radius: 6px; border: 1px solid var(--border2);
+  background: var(--surface2); color: var(--text); font-family: var(--mono); font-size: 12px; }
+.tc-test { font-size: 10px !important; padding: 4px 7px !important; }
+body.amb-on { padding-bottom: 66px; }
+#ambient.near-end #amb-pill { opacity: 0 !important; }
+.deck-reset-top { background: var(--surface2) !important; color: var(--muted) !important; border-color: var(--border2) !important; }
+#ambient { position: fixed; inset: 0; pointer-events: none; z-index: 97; overflow: hidden; }
+#ambient .glow { position: absolute; inset: 0; opacity: 0; transition: opacity 1.2s ease; }
+#ambient.hot .glow { opacity: 1; animation: hotglow 2.4s ease-in-out infinite; }
+#ambient.cool .glow { opacity: 1; box-shadow: inset 0 0 0 2px #7fa8ff66, inset 0 0 30px #7fa8ff3a; }
+@keyframes hotglow { 0%,100% { box-shadow: inset 0 0 0 3px #ffb84d88, inset 0 0 26px #ff7a3d44; }
+  50% { box-shadow: inset 0 0 0 4px #ffd36acc, inset 0 0 48px #ff7a3d77; } }
+.amb-p { position: absolute; bottom: -30px; font-size: 17px; opacity: 0; animation: rise linear infinite; }
+.amb-p.spark { color: #ffc94d; text-shadow: 0 0 8px #ff7a3d; }
+@keyframes rise { 0% { opacity: 0; transform: translateY(0) scale(.7); } 10% { opacity: .85; }
+  80% { opacity: .6; } 100% { opacity: 0; transform: translateY(-105vh) translateX(var(--sway)) scale(1.1); } }
+.amb-c { position: absolute; top: -30px; font-size: 15px; opacity: 0; color: #a9c4ff; animation: sink linear infinite; }
+@keyframes sink { 0% { opacity: 0; } 10% { opacity: .55; } 90% { opacity: .4; }
+  100% { opacity: 0; transform: translateY(105vh) translateX(var(--sway)) rotate(120deg); } }
+#amb-pill { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); padding: 8px 14px;
+  border-radius: 999px; font-family: var(--sans); font-weight: 700; font-size: 13px; white-space: nowrap;
+  opacity: 0; transition: opacity .8s ease; }
+#ambient.hot #amb-pill { opacity: 1; background: linear-gradient(135deg, #ffc94d, #ff7a3d); color: #2a1200;
+  box-shadow: 0 6px 20px #ff7a3d66; animation: pillbeat 1.2s ease-in-out infinite; }
+#ambient.cool #amb-pill { opacity: .95; background: #dbeafeee; color: #14244a; box-shadow: 0 4px 14px #4a6fd044; }
+@keyframes pillbeat { 0%,100% { transform: translateX(-50%) scale(1); } 15% { transform: translateX(-50%) scale(1.06); }
+  30% { transform: translateX(-50%) scale(1); } 45% { transform: translateX(-50%) scale(1.04); } }
+
+/* ── Rada pre boxy P1/P2/P3 ── */
+#box-adv {
+  margin: 4px 0 8px;
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  background: var(--surface2);
+  overflow: hidden;
+}
+#box-adv.hidden { display: none; }
+#box-adv.dev { border-color: var(--amber); animation: devpulse 1.6s ease-in-out 2; }
+@keyframes devpulse {
+  0%,100% { box-shadow: 0 0 0 0 transparent; }
+  50% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--amber) 45%, transparent); }
+}
+#box-adv.collapsed .ba-body { display: none; }
+.ba-head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 7px 9px; border-bottom: 1px solid var(--border); }
+.ba-meta { font-family: var(--mono); font-size: 10.5px; color: var(--muted); flex: 1; }
+.ba-meta b { color: var(--text); }
+.ba-chips { display: flex; gap: 4px; flex-wrap: wrap; width: 100%; order: 3; }
+.ba-chip { font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 3px 7px; border-radius: 5px;
+  border: 1px solid color-mix(in srgb, var(--bc) 55%, transparent); color: var(--text); background: var(--surface); }
+.ba-chip b { color: var(--bc); margin-right: 3px; }
+.ba-chip.dev { border-color: var(--amber); }
+.ba-btn { font-family: var(--mono); font-size: 10.5px; font-weight: 700; padding: 6px 9px; border-radius: 6px;
+  border: 1px solid var(--border2); background: var(--surface); color: var(--text); cursor: pointer; touch-action: manipulation; }
+.ba-btn:active { transform: scale(0.95); }
+.ba-btn.hot { border-color: var(--purple); color: var(--purple); }
+.ba-body { padding: 2px 9px 9px; }
+.ba-box { border-left: 3px solid var(--bc); padding-left: 8px; margin-top: 7px; }
+.ba-hand { padding: 4px 0; }
+.ba-hand + .ba-hand { border-top: 1px dashed var(--border2); }
+.ba-hand.inactive { opacity: .5; cursor: pointer; }
+.ba-row1 { display: flex; align-items: center; gap: 8px; }
+.ba-name { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--bc); min-width: 28px; }
+.ba-cards { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--text); }
+.ba-total { font-family: var(--mono); font-size: 10.5px; color: var(--muted); }
+.ba-action { margin-left: auto; font-family: var(--mono); font-size: 19px; font-weight: 700; letter-spacing: .03em; }
+.act-hit { color: var(--cyan); } .act-stand { color: var(--green); } .act-double { color: var(--amber); }
+.act-split { color: var(--purple); } .act-surrender { color: var(--red); } .act-neu { color: var(--muted); }
+.ba-sub { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 3px; line-height: 1.45; }
+.ba-sub b { color: var(--text); }
+.ba-dev { margin-top: 5px; font-size: 11.5px; line-height: 1.45; padding: 5px 8px; border-radius: 6px;
+  background: var(--warn-bg); border: 1px solid var(--amber); color: var(--text); }
+.ba-dev b { color: var(--amber); }
+.ba-ctrl { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 5px; }
+.ba-ins { font-family: var(--mono); font-size: 10.5px; color: var(--muted); margin-top: 6px; }
+.ba-ins b.take { color: var(--amber); } .ba-ins b.skip { color: var(--muted); }
 .deck-stats {
   display: flex;
   gap: 10px;
@@ -521,7 +679,7 @@ header {
   cursor: pointer;
   letter-spacing: .04em;
 }
-.rule-toggle.on { background: #0d1f12; color: var(--green); border-color: var(--green2); }
+.rule-toggle.on { background: var(--pos-bg); color: var(--green); border-color: var(--green2); }
 
 /* ── Advice panel ── */
 #advice-panel {
@@ -582,7 +740,7 @@ header {
   border-radius: 5px;
   border: 1px solid var(--border);
 }
-.ev-row.best { border-color: var(--green2); background: #0a1f0f; }
+.ev-row.best { border-color: var(--green2); background: var(--pos-bg); }
 .ev-row.worst { opacity: .5; }
 .ev-label { font-family: var(--mono); font-size: 10px; color: var(--muted); }
 .ev-val { font-family: var(--mono); font-size: 12px; font-weight: 700; }
@@ -777,8 +935,8 @@ header {
   letter-spacing: .04em;
 }
 .ctrl-btn:hover { background: var(--dim); }
-.ctrl-btn.danger { background: #7f1d1d44; border-color: #7f1d1d; color: #fca5a5; }
-.ctrl-btn.primary { background: #0a2810; border-color: var(--green2); color: var(--green); }
+.ctrl-btn.danger { background: #7f1d1d44; border-color: #7f1d1d; color: var(--neg-text); }
+.ctrl-btn.primary { background: var(--pos-bg); border-color: var(--green2); color: var(--green); }
 
 /* ── Count + bet panel ── */
 #count-panel {
@@ -853,8 +1011,8 @@ header {
   text-align: center;
   border: 1px solid var(--border);
 }
-.count-cell.edge-pos { border-color: var(--green2); background: #071a0e; }
-.count-cell.edge-neg { border-color: #7f1d1d; background: #130808; }
+.count-cell.edge-pos { border-color: var(--green2); background: var(--pos-bg); }
+.count-cell.edge-neg { border-color: #7f1d1d; background: var(--neg-bg); }
 .cc-label {
   font-family: var(--sans);
   font-size: 11px;
@@ -923,7 +1081,7 @@ header {
   text-align: center;
   border: 1px solid var(--border);
 }
-.bet-cell.active { border-color: var(--green2); background: #071a0e; }
+.bet-cell.active { border-color: var(--green2); background: var(--pos-bg); }
 .bet-label {
   font-family: var(--sans);
   font-size: 11px;
@@ -954,9 +1112,9 @@ header {
   text-align: center;
 }
 .ror-cell.hero { grid-row: span 1; }
-.ror-cell.lvl-good { border-color: var(--green2); background: #071a0e; }
-.ror-cell.lvl-warn { border-color: #7a5b12; background: #1a1405; }
-.ror-cell.lvl-bad  { border-color: #7f1d1d; background: #130808; }
+.ror-cell.lvl-good { border-color: var(--green2); background: var(--pos-bg); }
+.ror-cell.lvl-warn { border-color: #7a5b12; background: var(--warn-bg); }
+.ror-cell.lvl-bad  { border-color: #7f1d1d; background: var(--neg-bg); }
 .ror-label {
   font-family: var(--sans);
   font-size: 10.5px;
@@ -1024,8 +1182,16 @@ header {
 <body>
 
 <header>
-  <div class="logo">PERFECT PLAY <span>ADVISOR</span></div>
+  <div class="logo">PERFECT PLAY <span>ADVISOR · LOCAL</span></div>
   <div class="header-right">
+    <select class="prof-select skin-select" id="skin-select" onchange="setSkin(this.value)" title="Motív / skin">
+      <option value="noir">🎨 Noir</option>
+      <option value="felt">🎨 Zelené plátno</option>
+      <option value="vegas">🎨 Vegas</option>
+      <option value="neon">🎨 Neón</option>
+      <option value="midnight">🎨 Polnoc</option>
+      <option value="light">🎨 Denný (svetlý)</option>
+    </select>
     <div class="hbtn active" id="btn-8deck" onclick="setDecks(8,this)">8 decks</div>
     <div class="hbtn" id="btn-6deck" onclick="setDecks(6,this)">6 decks</div>
     <div class="hbtn" id="btn-2deck" onclick="setDecks(2,this)">2 decks</div>
@@ -1033,9 +1199,8 @@ header {
   </div>
 </header>
 <div style="max-width:960px;margin:10px 12px 0;padding:9px 14px;border:1px solid rgba(242,180,65,.4);background:rgba(242,180,65,.08);border-radius:10px;font:13px/1.45 'DM Sans',system-ui,sans-serif;color:inherit">
-  <b>Tréningový nástroj.</b> Slúži na učenie sa optimálnej stratégie a počítania kariet. Používanie pomocného softvéru počas skutočnej hry väčšina kasín zakazuje vo svojich podmienkach. Návody nájdeš na <a href="https://surebety.blog/" style="color:#F2B441">surebety.blog</a> · <a href="../" style="color:#F2B441">← Všetky nástroje</a>. Hra len pre osoby staršie ako 18 rokov.
+  <b>Tréningový nástroj.</b> Slúži na učenie sa optimálnej stratégie a počítania kariet. Používanie pomocného softvéru počas skutočnej hry väčšina kasín zakazuje vo svojich podmienkach. Návody nájdeš na <a href="https://surebety.blog/" style="color:var(--amber)">surebety.blog</a> · <a href="../" style="color:var(--amber)">← Všetky nástroje</a>. Hra len pre osoby staršie ako 18 rokov.
 </div>
-
 
 <!-- Profiles -->
 <div id="profile-bar">
@@ -1055,18 +1220,41 @@ header {
   <div class="rule-toggle" id="r-ls" onclick="toggleRule('ls',this)" title="Late surrender">Surrender</div>
   <div class="rule-toggle" id="r-es" onclick="toggleRule('es',this)" title="Early surrender">Early surr.</div>
   <div class="rule-toggle on" id="r-bj32" onclick="toggleRule('bj32',this)" title="Blackjack pays 3:2">BJ 3:2</div>
+  <div class="rule-toggle on" id="r-dbr" onclick="toggleRule('dbr',this)" title="Dealer ukazuje 10 a dotiahne skrytý blackjack → double (aj po splite) sa vráti, prehráva sa len základná stávka">10: double vrátený pri skrytom BJ</div>
+  <div class="rule-toggle on" id="r-peekA" onclick="toggleRule('peekA',this)" title="Dealer ukazuje eso → hneď kontroluje blackjack (poistka). Ak ho má, kolo končí; ak nie, hrá sa ďalej proti dealerovi bez BJ">A: dealer hneď kontroluje BJ</div>
 </div>
 
 <!-- Deck tracker -->
 <div id="deck-section">
   <div class="section-label">Tap a rank each time a card is dealt</div>
   <div class="section-label" style="margin-top:-4px;opacity:.75;text-transform:none;letter-spacing:normal;font-size:10.5px">
-    Ťukni na rožok <b style="color:var(--amber)">D</b> na karte = 1 ťuk pre dealerovu kartu (bez tlačidla nižšie)
+    Rožky na karte: <b style="color:var(--amber)">D</b> = dealer, <b style="color:var(--p1)">P1</b> <b style="color:var(--p2)">P2</b> <b style="color:var(--p3)">P3</b> = tvoje boxy (podľa „Počet boxov"), stred karty = iná karta (len do countu)
   </div>
   <div class="zone-side-row">
     <span class="zone-side-label">Rožok D:</span>
     <div class="zone-side-btn" id="zone-side-left" onclick="setDealerZoneSide('left')">⬅ Vľavo</div>
     <div class="zone-side-btn" id="zone-side-right" onclick="setDealerZoneSide('right')">Vpravo ➡</div>
+    <span class="zone-side-label" style="margin-left:6px">Rady boxov:</span>
+    <select class="prof-select" id="box-adv-mode" onchange="renderBoxAdvisor(); saveLastSettings()">
+      <option value="always">Vždy</option>
+      <option value="2">Hi-Lo TC ≥ +2</option>
+      <option value="3">Hi-Lo TC ≥ +3</option>
+      <option value="5">Hi-Lo TC ≥ +5</option>
+      <option value="off">Vypnuté</option>
+    </select>
+  </div>
+  <div class="zone-side-row" style="flex-wrap:wrap">
+    <span class="zone-side-label">🔥 Nálada balíčka (Hi-Lo TC): výhodný pri ≥</span>
+    <input class="tc-in" id="tc-up" type="number" value="3" step="0.5" oninput="saveLastSettings()">
+    <span class="zone-side-label">vychladne pod</span>
+    <input class="tc-in" id="tc-down" type="number" value="2" step="0.5" oninput="saveLastSettings()">
+    <button class="zone-side-btn tc-test" onclick="showTcToast('up', 3.4)">skúška 🔥</button>
+    <button class="zone-side-btn tc-test" onclick="showTcToast('down', 1.6)">skúška ❄</button>
+    <span class="zone-side-label">trvalá hláška:</span>
+    <select class="prof-select" id="tc-ambient" onchange="setAmbient(tcAlertState); saveLastSettings()">
+      <option value="on">Zapnutá</option>
+      <option value="off">Vypnutá</option>
+    </select>
   </div>
   <div class="dealer-tag-row">
     <button class="dealer-tag-btn" id="dealer-tag-btn" onclick="toggleDealerTag()">🎯 Ďalšia karta → DEALEROVI</button>
@@ -1076,8 +1264,10 @@ header {
   <div class="deck-grid" id="deck-grid"></div>
   <div class="deck-undo-row">
     <button class="deck-undo-btn" id="deck-undo-btn" onclick="undoDeal()" disabled>↩ Return last card</button>
+    <button class="deck-undo-btn deck-reset-top" onclick="if (confirm('Resetovať topánku? Vymaže sa count aj história kariet.')) resetDeck()">⟲ Reset deck</button>
     <div class="last-dealt" id="last-dealt" style="display:none"></div>
   </div>
+  <div id="box-adv" class="hidden"></div>
   <div class="dealt-history" id="dealt-history"></div>
   <div class="deck-stats" id="deck-stats"></div>
   <div id="insurance-live"></div>
@@ -1112,7 +1302,7 @@ header {
       </select>
     </div>
     <div class="ki"><label>Počet boxov</label>
-      <select id="cp-boxes" onchange="updateCountPanel()">
+      <select id="cp-boxes" onchange="updateCountPanel(); buildDeckGrid(); renderBoxAdvisor()">
         <option value="1">1 box</option>
         <option value="2" selected>2 boxy</option>
         <option value="3">3 boxy</option>
@@ -1420,6 +1610,7 @@ function updateCountPanel() {
   renderInsuranceLive();
   updateLossProbability(exactEdge);
   updateRiskOfRuin();
+  checkTcAlert();
   saveLastSettings();
 }
 
@@ -1670,7 +1861,7 @@ let numDecks = 8;
 let remaining = {};
 let playerCards = [];
 let dealerCard = null;
-let rules = { h17: false, das: true, rsa: false, ls: false, es: false, bj32: true };
+let rules = { h17: false, das: true, rsa: false, ls: false, es: false, bj32: true, dbr: true, peekA: true };
 
 function perRank(n) {
   const t = {};
@@ -1694,6 +1885,7 @@ function toggleRule(key, el) {
   rules[key] = !rules[key];
   el.classList.toggle('on', rules[key]);
   analyze();
+  renderBoxAdvisor();
   saveLastSettings();
 }
 
@@ -1705,6 +1897,9 @@ function resetDeck() {
   currentRoundDealerCards = [];
   roundIndex = 0;
   roundMarkers = [];
+  boxState = freshBoxes();
+  tcAlertState = 'low';
+  setAmbient('low');
   playerCards = [];
   dealerCard = null;
   buildDeckGrid();
@@ -1715,6 +1910,7 @@ function resetDeck() {
   updateRoundCount();
   updateDealerProgress();
   analyze();
+  renderBoxAdvisor();
 }
 
 function clearHand() {
@@ -1779,9 +1975,11 @@ function checkRoundEnd(entry) {
     dealerTotal,
     dealerCards: currentRoundDealerCards.slice(),
     suggestedBet,
-    historyIndex: historyLog.length - 1
+    historyIndex: historyLog.length - 1,
+    boxesSnapshot: JSON.parse(JSON.stringify(boxState))
   });
   currentRoundDealerCards = [];
+  boxState = freshBoxes();
   updateRoundCount();
   updateDealerProgress();
 }
@@ -1790,6 +1988,14 @@ function buildDeckGrid() {
   const grid = document.getElementById('deck-grid');
   grid.innerHTML = '';
   const total = perRank(numDecks);
+  // Rohy: P1 vľavo hore, P2 vpravo hore, D dole na zvolenej strane, P3 dole na opačnej.
+  const nP = Math.min(3, getBoxes());
+  const dCorner  = dealerZoneSide === 'left' ? 'z-bl' : 'z-br';
+  const p3Corner = dealerZoneSide === 'left' ? 'z-br' : 'z-bl';
+  let zonesHtml = `<div class="rank-zone zd ${dCorner}" data-z="D" title="Dealerova karta">D</div>`;
+  zonesHtml += `<div class="rank-zone zp1 z-tl" data-z="1" title="Karta do boxu P1">P1</div>`;
+  if (nP >= 2) zonesHtml += `<div class="rank-zone zp2 z-tr" data-z="2" title="Karta do boxu P2">P2</div>`;
+  if (nP >= 3) zonesHtml += `<div class="rank-zone zp3 ${p3Corner}" data-z="3" title="Karta do boxu P3">P3</div>`;
   RANKS.forEach(r => {
     const tot = total[r];
     const rem = remaining[r];
@@ -1800,21 +2006,23 @@ function buildDeckGrid() {
     const btn = document.createElement('div');
     btn.className = 'rank-btn ' + btnCls;
     btn.id = 'rankbtn-' + r;
-    btn.innerHTML = `
-      <div class="rank-dealer-zone" title="1 ťuk = dealerova karta">D</div>
-      <div class="rank-label">${r === '10' ? '10' : r}</div>
+    btn.innerHTML = zonesHtml + `
+      <div class="rank-btn-label">${r === '10' ? '10' : r}</div>
       <div class="rank-bar-wrap"><div class="rank-bar ${barCls}" id="rbar-${r}" style="width:${(pct*100).toFixed(0)}%"></div></div>
       <div class="rank-btn-rem ${remCls}" id="rem-${r}">${rem}</div>`;
     btn.addEventListener('click', () => dealFromDeck(r));
-    btn.querySelector('.rank-dealer-zone').addEventListener('click', (e) => {
+    btn.querySelectorAll('.rank-zone').forEach(z => z.addEventListener('click', (e) => {
       e.stopPropagation();
-      dealFromDeck(r, true);
+      const k = z.dataset.z;
+      if (k === 'D') dealFromDeck(r, true);
+      else dealFromDeck(r, false, parseInt(k, 10));
       const flashBtn = document.getElementById('rankbtn-' + r);
       if (flashBtn) {
-        flashBtn.classList.add('dealer-armed');
-        setTimeout(() => flashBtn.classList.remove('dealer-armed'), 180);
+        flashBtn.style.setProperty('--flash', k === 'D' ? 'var(--amber)' : `var(--p${k})`);
+        flashBtn.classList.add('flash');
+        setTimeout(() => flashBtn.classList.remove('flash'), 200);
       }
-    });
+    }));
     grid.appendChild(btn);
   });
   updateDeckStats();
@@ -1841,14 +2049,21 @@ function updateDeckGrid() {
   updateCountPanel();
 }
 
-function dealFromDeck(rank, forceDealer) {
+function dealFromDeck(rank, forceDealer, box) {
   if (remaining[rank] <= 0) return;
   remaining[rank]--;
   deckUndoStack.push(rank);
-  const isDealer = forceDealer === true || nextCardIsDealer;
-  const entry = { rank, ts: Date.now(), isDealer, roundEndedHere: false };
+  const isDealer = !box && (forceDealer === true || nextCardIsDealer);
+  const entry = { rank, ts: Date.now(), isDealer, box: box || 0, handIdx: 0, advanced: false, roundEndedHere: false };
+  if (box) {
+    const b = boxState[box];
+    entry.handIdx = b.active;
+    b.hands[b.active].push(rank);
+    entry.advanced = autoAdvanceSplit(b);
+    advCollapsed = false;
+  }
   historyLog.push(entry);
-  if (nextCardIsDealer) {
+  if (nextCardIsDealer && !box) {
     nextCardIsDealer = false;
     updateDealerTagBtn();
   }
@@ -1860,6 +2075,7 @@ function dealFromDeck(rank, forceDealer) {
   buildSelectors();
   analyze();
   if (isDealer) checkRoundEnd(entry);
+  renderBoxAdvisor();
 }
 
 function undoDeal() {
@@ -1874,15 +2090,24 @@ function undoDeal() {
       const marker = roundMarkers.pop();
       roundIndex--;
       currentRoundDealerCards = marker ? marker.dealerCards.slice(0, -1) : [];
+      if (marker && marker.boxesSnapshot) boxState = JSON.parse(JSON.stringify(marker.boxesSnapshot));
       updateRoundCount();
     } else if (entry.isDealer) {
       currentRoundDealerCards.pop();
+    } else if (entry.box) {
+      const b = boxState[entry.box];
+      const h = b && b.hands[entry.handIdx];
+      if (h && h.length && h[h.length - 1] === entry.rank) {
+        h.pop();
+        if (entry.advanced) b.active = entry.handIdx;
+      }
     }
   }
   updateDealerProgress();
   updateDeckGrid();
   buildSelectors();
   analyze();
+  renderBoxAdvisor();
 }
 
 function updateUndoBtn() {
@@ -1908,8 +2133,10 @@ function updateDealtHistory() {
   // Show up to 10 most recent, newest first
   const recent = historyLog.slice(-10).reverse();
   const pills = recent.map((entry, i) => {
-    const cls = [i === 0 ? 'newest' : i >= 5 ? 'older' : '', entry.isDealer ? 'dealer' : ''].join(' ').trim();
-    return `<div class="dealt-pill ${cls}">${entry.rank}</div>`;
+    const cls = [i === 0 ? 'newest' : i >= 5 ? 'older' : ''].join(' ').trim();
+    const tag = entry.box ? 'P' + entry.box : entry.isDealer ? 'D' : '';
+    const tagAttr = tag ? ` data-tag="${tag}" style="--tagc:${entry.box ? 'var(--p' + entry.box + ')' : 'var(--amber)'}"` : '';
+    return `<div class="dealt-pill ${cls}"${tagAttr}>${entry.rank}</div>`;
   }).join('');
   el.innerHTML = `<div class="dealt-history-label">Last dealt</div>${pills}`;
 }
@@ -1937,6 +2164,8 @@ function exportHistory() {
     ['Surrender', rules.ls ? 'Yes' : 'No'],
     ['Early surrender', rules.es ? 'Yes' : 'No'],
     ['Blackjack payout', rules.bj32 ? '3:2' : '6:5'],
+    ['Dealer 10 + hidden BJ: doubles refunded', rules.dbr ? 'Yes' : 'No'],
+    ['Dealer ace: immediate BJ check (peek)', rules.peekA ? 'Yes' : 'No'],
     ['Bankroll (EUR)', bankroll],
     ['Min bet set in app (EUR)', minBet],
     ['Kelly fraction', kfracLabel],
@@ -1971,7 +2200,7 @@ function exportHistory() {
       cardsDealt,
       new Date(entry.ts).toLocaleString('en-GB'),
       entry.rank,
-      entry.isDealer ? 'Dealer' : 'Player/other',
+      entry.box ? ('Box P' + entry.box + (entry.handIdx ? ' (split hand ' + (entry.handIdx + 1) + ')' : '')) : entry.isDealer ? 'Dealer' : 'Other',
       cardsLeftAtPoint,
       rcHalves.toFixed(1),
       rcHiLo.toFixed(1),
@@ -2017,8 +2246,7 @@ let dealerZoneSide = 'right';
 try { dealerZoneSide = localStorage.getItem('dealerZoneSide') || 'right'; } catch(e) {}
 
 function applyDealerZoneSide() {
-  const grid = document.getElementById('deck-grid');
-  if (grid) grid.classList.toggle('zone-right', dealerZoneSide === 'right');
+  if (document.getElementById('deck-grid') && typeof remaining['A'] === 'number') buildDeckGrid();
   const leftBtn = document.getElementById('zone-side-left');
   const rightBtn = document.getElementById('zone-side-right');
   if (leftBtn) leftBtn.classList.toggle('on', dealerZoneSide === 'left');
@@ -2196,10 +2424,15 @@ function evStandCards(cards, dOut) {
   const {total} = handVal(cards); return total > 21 ? -1 : evStand(total, dOut);
 }
 
-function evHit(cards, rem, dOut, depth) {
+function evHit(cards, rem, dOut, depth, memo) {
+  // memo: v ramci jedneho vypoctu urcuje multiset kariet v ruke aj zvysok balicka,
+  // takze rovnake kombinacie (v inom poradi) sa nepocitaju znova.
+  if (!memo) memo = new Map();
   if (depth > 10) return evStandCards(cards, dOut);
+  const key = cards.slice().sort().join(',');
+  if (memo.has(key)) return memo.get(key);
   const left = RANKS.reduce((s,r)=>s+rem[r],0);
-  if (!left) return evStandCards(cards, dOut);
+  if (!left) { const v = evStandCards(cards, dOut); memo.set(key, v); return v; }
   let ev = 0;
   for (const r of RANKS) {
     if (!rem[r]) continue;
@@ -2207,8 +2440,9 @@ function evHit(cards, rem, dOut, depth) {
     const nc = [...cards,r]; const nr = Object.assign({},rem); nr[r]--;
     const {total} = handVal(nc);
     if (total > 21) ev += p * -1;
-    else ev += p * Math.max(evStandCards(nc,dOut), evHit(nc,nr,dOut,depth+1));
+    else ev += p * Math.max(evStandCards(nc,dOut), evHit(nc,nr,dOut,depth+1,memo));
   }
+  memo.set(key, ev);
   return ev;
 }
 
@@ -2228,13 +2462,14 @@ function evDouble(cards, rem, dOut) {
 function evSplit(splitRank, rem, dOut) {
   const left = RANKS.reduce((s,r)=>s+rem[r],0); if (!left) return -2;
   let handEV = 0;
+  const memo = new Map();
   for (const r of RANKS) {
     if (!rem[r]) continue;
     const p = rem[r]/left;
     const nc = [splitRank, r]; const nr = Object.assign({},rem); nr[r]--;
     const {total} = handVal(nc);
     if (total > 21) { handEV += p*-1; continue; }
-    let best = Math.max(evStandCards(nc,dOut), evHit(nc,nr,dOut,0));
+    let best = Math.max(evStandCards(nc,dOut), evHit(nc,nr,dOut,0,memo));
     if (rules.das) best = Math.max(best, evDouble(nc,nr,dOut));
     handEV += p * best;
   }
@@ -2286,12 +2521,48 @@ function computeEVs(pCards, upcard, remShoe) {
   const standEV = evStand(pt, dOutAvg) - bjProb * (1 - 1); // bjProb already in dOutAvg[21]
   // Note: evStand treats dealer 21 as a loss when pt < 21, which is correct for BJ too
 
+  // Rozdelenie dealera BEZ blackjacku (normalizovane) — pouziva sa pri lokalnych pravidlach.
+  let dNoBJ = null;
+  if (bjProb > 0 && bjProb < 1) {
+    dNoBJ = {};
+    for (const k of Object.keys(dOutAvg)) dNoBJ[k] = dOutAvg[k] / (1 - bjProb);
+    dNoBJ[21] = Math.max(0, dOutAvg[21] - bjProb) / (1 - bjProb);
+  }
+
+  // LOKALNE PRAVIDLO 1 — dealer ukazuje ESO: dealer hned skontroluje blackjack (otazka na poistku).
+  // Ak BJ ma, kolo konci skor nez sa hrac rozhoduje. Ak hrac rozhoduje, dealer BJ NEMA,
+  // takze vsetky akcie (vratane double/split) sa pocitaju proti dealerovi bez BJ.
+  if (upcard === 'A' && rules.peekA && dNoBJ) {
+    const totals = {
+      stand: evStand(pt, dNoBJ),
+      hit:   evHit(pCards, {...remShoe}, dNoBJ, 0),
+    };
+    if (isFirstTwo) totals.double = evDouble(pCards, {...remShoe}, dNoBJ);
+    if (splitRank)  totals.split  = evSplit(splitRank, {...remShoe}, dNoBJ);
+    totals._dOutAvg = dNoBJ;
+    return totals;
+  }
+
+  // LOKALNE PRAVIDLO 2 — dealer ukazuje DESIATKU a dotiahne skryty blackjack:
+  // double sa vrati, prehrava sa len zakladna stavka (aj pri double po splite — kazda split ruka stratí len 1).
+  // Pri dealerovom BJ teda kazda akcia stoji presne -1 na ruku, preto:
+  //   EV(akcia) = P(bez BJ) x EV(akcia proti dealerovi bez BJ) + P(BJ) x (-1)
+  const refund = upcard === '10' && rules.dbr && dNoBJ;
+
   const totals = {
     stand: evStand(pt, dOutAvg),
     hit:   evHit(pCards, {...remShoe}, dOutAvg, 0),
   };
-  if (isFirstTwo) totals.double = evDouble(pCards, {...remShoe}, dOutAvg);
-  if (splitRank)  totals.split  = evSplit(splitRank, {...remShoe}, dOutAvg);
+  if (isFirstTwo) {
+    totals.double = refund
+      ? (1 - bjProb) * evDouble(pCards, {...remShoe}, dNoBJ) - bjProb
+      : evDouble(pCards, {...remShoe}, dOutAvg);
+  }
+  if (splitRank) {
+    totals.split = refund
+      ? (1 - bjProb) * evSplit(splitRank, {...remShoe}, dNoBJ) - 2 * bjProb
+      : evSplit(splitRank, {...remShoe}, dOutAvg);
+  }
 
   totals._dOutAvg = dOutAvg; // expose for probability bars
   return totals;
@@ -2519,10 +2790,10 @@ function analyze() {
 }
 
 // ── Nastavenia: automaticke pamatanie + profily ─────────────────
-const LS_LAST = 'bjAdvisor.lastSettings';
-const LS_PROFILES = 'bjAdvisor.profiles';
+const LS_LAST = 'bjAdvisorLocal.lastSettings';
+const LS_PROFILES = 'bjAdvisorLocal.profiles';
 const PROFILE_SLOTS = 3;
-const INPUT_IDS = ['cp-bankroll','cp-minbet','cp-kfrac','cp-boxes','cp-hands','cp-ror-edge','cp-ror-avgbet','cp-ror-spread'];
+const INPUT_IDS = ['cp-bankroll','cp-minbet','cp-kfrac','cp-boxes','cp-hands','cp-ror-edge','cp-ror-avgbet','cp-ror-spread','box-adv-mode','tc-up','tc-down','tc-ambient'];
 let settingsReady = false; // pocas inicializacie neukladat (aby sa neprepisalo ulozene defaultmi)
 
 function lsGet(k) { try { return JSON.parse(localStorage.getItem(k)); } catch(e) { return null; } }
@@ -2531,12 +2802,13 @@ function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return 
 function getSettings() {
   const inputs = {};
   INPUT_IDS.forEach(id => { const el = document.getElementById(id); if (el) inputs[id] = el.value; });
-  return { numDecks, rules: { ...rules }, activeSystem, dealerZoneSide, inputs };
+  return { numDecks, rules: { ...rules }, activeSystem, dealerZoneSide, skin: currentSkin, inputs };
 }
 
 // Aplikuje nastavenia na UI. Pocet balickov sa meni len ak je iny (zmena resetuje topanku).
 function applySettings(st, isInit) {
   if (!st) return;
+  if (st.skin) setSkin(st.skin, true);
   if (st.rules) Object.keys(rules).forEach(k => { if (typeof st.rules[k] === 'boolean') rules[k] = st.rules[k]; });
   document.querySelectorAll('.rule-toggle').forEach(el => {
     const key = el.id.replace('r-',''); if (rules[key] !== undefined) el.classList.toggle('on', rules[key]);
@@ -2560,7 +2832,7 @@ function applySettings(st, isInit) {
     if (isInit) numDecks = st.numDecks;
     else if (st.numDecks !== numDecks) { numDecks = st.numDecks; resetDeck(); }
   }
-  if (!isInit) { applyDealerZoneSide(); updateCountPanel(); analyze(); }
+  if (!isInit) { applyDealerZoneSide(); updateCountPanel(); analyze(); renderBoxAdvisor(); }
 }
 
 function saveLastSettings() {
@@ -2620,6 +2892,336 @@ function renameProfile() {
   renderProfileSelect(i);
 }
 
+// ── Skiny ────────────────────────────────────────────────────────
+let currentSkin = 'noir';
+
+// ── Nálada balíčka (s hysteréziou) ───────────────────────────────
+// 'low'  = začiatok topánky, nič sa neukazuje
+// 'high' = Hi-Lo TC vyskočil na prah "výhodný" → bublina + trvalá hláška "🔥 Výhodný balíček"
+// 'cool' = potom klesol pod prah "vychladne"   → bublina + trvalá hláška "❄ Balíček vychladol"
+// Medzi prahmi sa nič neopakuje, takže kolísanie okolo +3 nespúšťa animácie stále dookola.
+let tcAlertState = 'low';
+let ambientMode = null;
+
+function fmtTcDown(tc) {
+  const r = Math.floor(tc * 10 + 1e-9) / 10; // nadol, aby pod +2 nikdy neukázalo +2.0
+  return (r >= 0 ? '+' : '') + r.toFixed(1);
+}
+
+function checkTcAlert() {
+  if (typeof settingsReady === 'undefined' || !settingsReady) return;
+  const up = parseFloat(document.getElementById('tc-up').value);
+  const down = parseFloat(document.getElementById('tc-down').value);
+  if (isNaN(up) || isNaN(down)) return;
+  const tc = hiLoTC();
+  if (tcAlertState !== 'high' && tc >= up) { tcAlertState = 'high'; showTcToast('up', tc); setAmbient('high'); }
+  else if (tcAlertState === 'high' && tc < Math.min(down, up)) { tcAlertState = 'cool'; showTcToast('down', tc); setAmbient('cool'); }
+  updateAmbientPill(tc);
+}
+
+function showTcToast(kind, tc) {
+  document.querySelectorAll('.tc-toast, .tc-burst, .tc-drift').forEach(e => e.remove());
+  const tcStr = fmtTcDown(tc);
+  const t = document.createElement('div');
+  t.className = 'tc-toast ' + kind;
+  t.innerHTML = kind === 'up'
+    ? `🔥 Count ${tcStr} — balíček je výhodný!<small>zvýš stávku podľa „Suggested bet“</small>`
+    : `❄ Count klesol na ${tcStr}<small>balíček vychladol — zníž stávku a spomaľ</small>`;
+  document.body.appendChild(t);
+  if (kind === 'up') {
+    const icons = ['💰','🔥','✨','⭐','🍀','💎'];
+    for (let i = 0; i < 14; i++) {
+      const b = document.createElement('span');
+      b.className = 'tc-burst';
+      b.textContent = icons[i % icons.length];
+      const ang = (Math.PI * 2 * i) / 14 + Math.random() * 0.3;
+      const dist = 90 + Math.random() * 70;
+      b.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
+      b.style.setProperty('--dy', Math.sin(ang) * dist * 0.8 + 'px');
+      b.style.setProperty('--rot', (Math.random() * 80 - 40) + 'deg');
+      b.style.animationDelay = (Math.random() * 0.15) + 's';
+      document.body.appendChild(b);
+    }
+    try { navigator.vibrate && navigator.vibrate([40, 60, 40]); } catch (e) {}
+  } else {
+    for (let i = 0; i < 7; i++) {
+      const f = document.createElement('span');
+      f.className = 'tc-drift';
+      f.textContent = i % 2 ? '🧊' : '❄';
+      f.style.left = (15 + Math.random() * 70) + '%';
+      f.style.animationDelay = (Math.random() * 0.6) + 's';
+      document.body.appendChild(f);
+    }
+    try { navigator.vibrate && navigator.vibrate(120); } catch (e) {}
+  }
+  setTimeout(() => document.querySelectorAll('.tc-toast, .tc-burst, .tc-drift').forEach(e => e.remove()), 3600);
+}
+
+function setAmbient(state) {
+  let a = document.getElementById('ambient');
+  if (!a) {
+    a = document.createElement('div'); a.id = 'ambient';
+    a.innerHTML = '<div class="glow"></div><div id="amb-parts"></div><div id="amb-pill"></div>';
+    document.body.appendChild(a);
+  }
+  const sel = document.getElementById('tc-ambient');
+  const mode = (sel && sel.value === 'off') ? 'low' : state;
+  a.className = mode === 'high' ? 'hot' : mode === 'cool' ? 'cool' : '';
+  document.body.classList.toggle('amb-on', mode === 'high' || mode === 'cool');
+  checkPillNearEnd();
+  if (mode === ambientMode) return;
+  ambientMode = mode;
+  let html = '';
+  // častice len pri okrajoch (0–9 % a 91–100 % šírky), aby nezakrývali karty
+  const edge = () => (Math.random() < 0.5 ? Math.random() * 9 : 91 + Math.random() * 9);
+  if (mode === 'high') {
+    for (let i = 0; i < 12; i++) {
+      const fire = i % 4 === 0;
+      html += `<span class="amb-p${fire ? '' : ' spark'}" style="left:${edge()}%;--sway:${(Math.random()*40-20).toFixed(0)}px;animation-duration:${(6+Math.random()*5).toFixed(1)}s;animation-delay:${(-Math.random()*10).toFixed(1)}s">${fire ? '🔥' : '✦'}</span>`;
+    }
+  } else if (mode === 'cool') {
+    for (let i = 0; i < 7; i++) {
+      html += `<span class="amb-c" style="left:${edge()}%;--sway:${(Math.random()*30-15).toFixed(0)}px;animation-duration:${(14+Math.random()*8).toFixed(1)}s;animation-delay:${(-Math.random()*20).toFixed(1)}s">❄</span>`;
+    }
+  }
+  document.getElementById('amb-parts').innerHTML = html;
+  updateAmbientPill(hiLoTC());
+}
+
+// Pri konci stránky trvalú hlášku skry, aby neprekrývala spodné tlačidlá (Clear hand / Reset deck).
+function checkPillNearEnd() {
+  const a = document.getElementById('ambient');
+  if (!a) return;
+  const near = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 90;
+  a.classList.toggle('near-end', near);
+}
+window.addEventListener('scroll', checkPillNearEnd, { passive: true });
+window.addEventListener('resize', checkPillNearEnd);
+
+function updateAmbientPill(tc) {
+  const pill = document.getElementById('amb-pill');
+  if (!pill) return;
+  const betEl = document.getElementById('cp-betsugg');
+  const bet = betEl ? betEl.textContent : '';
+  if (tcAlertState === 'high') pill.textContent = `🔥 Výhodný balíček · TC ${fmtTcDown(tc)} · stávka ${bet}`;
+  else if (tcAlertState === 'cool') pill.textContent = `❄ Balíček vychladol · TC ${fmtTcDown(tc)} · zníž stávku`;
+  else pill.textContent = '';
+}
+function setSkin(name, silent) {
+  const ok = ['noir','felt','vegas','neon','midnight','light'];
+  currentSkin = ok.includes(name) ? name : 'noir';
+  if (currentSkin === 'noir') document.documentElement.removeAttribute('data-skin');
+  else document.documentElement.setAttribute('data-skin', currentSkin);
+  const sel = document.getElementById('skin-select');
+  if (sel) sel.value = currentSkin;
+  if (!silent) saveLastSettings();
+}
+
+// ── Boxy hráča P1/P2/P3 + rada (vrátane odchýlok) ────────────────
+// Každá karta označená rožkom P1/P2/P3 ide do ruky daného boxu. Akonáhle má box 2 karty
+// a je známa dealerova karta (prvá karta označená D v tomto kole), spočíta sa EV všetkých
+// akcií z PRESNÉHO zloženia zvyšku topánky (rovnaký engine ako dole "Your hand").
+// Ten istý výpočet sa urobí aj pre neutrálny (plný) balíček = základná stratégia.
+// Ak sa najlepšia akcia líši, je to odchýlka vyvolaná countom → zvýraznené.
+function freshBoxes() {
+  const o = {};
+  [1, 2, 3].forEach(n => { o[n] = { hands: [[]], active: 0 }; });
+  return o;
+}
+let boxState = freshBoxes();
+let advCollapsed = false;
+const neutralCache = new Map();
+
+const ACT_LBL = { hit: 'HIT', stand: 'STAND', double: 'DOUBLE', split: 'SPLIT', surrender: 'SURRENDER' };
+const ACT_SK  = { hit: 'ťahaj', stand: 'stoj', double: 'zdvojnásob', split: 'rozdeľ', surrender: 'vzdaj sa' };
+
+function cardKey(r) { return r === '10' ? '10' : r; }
+function isPairHand(h) { return h.length === 2 && cardKey(h[0]) === cardKey(h[1]); }
+
+// Po splite: keď aktívna ruka dosiahne 21 alebo prepáli, automaticky prejdi na ďalšiu.
+function autoAdvanceSplit(b) {
+  if (b.hands.length < 2 || b.active >= b.hands.length - 1) return false;
+  const h = b.hands[b.active];
+  if (h.length >= 2 && handVal(h).total >= 21) { b.active++; return true; }
+  return false;
+}
+
+function splitBox(n) {
+  const b = boxState[n];
+  const h = b.hands[b.active];
+  if (!isPairHand(h) || b.hands.length >= 4) return;
+  b.hands.splice(b.active, 1, [h[0]], [h[1]]);
+  renderBoxAdvisor();
+}
+function nextHand(n) {
+  const b = boxState[n];
+  if (b.active < b.hands.length - 1) { b.active++; renderBoxAdvisor(); }
+}
+function setActiveHand(n, i) {
+  const b = boxState[n];
+  if (i >= 0 && i < b.hands.length) { b.active = i; renderBoxAdvisor(); }
+}
+
+function newRound() {
+  currentRoundDealerCards = [];
+  boxState = freshBoxes();
+  advCollapsed = false;
+  updateDealerProgress();
+  renderBoxAdvisor();
+}
+
+function toggleBoxAdv() {
+  advCollapsed = !advCollapsed;
+  const panel = document.getElementById('box-adv');
+  if (panel) panel.classList.toggle('collapsed', advCollapsed);
+  const t = document.getElementById('ba-toggle');
+  if (t) t.textContent = advCollapsed ? '▴ Detail' : '▾ Skryť';
+}
+
+function hiLoTC() {
+  const total = perRank(numDecks);
+  let rc = 0;
+  RANKS.forEach(r => { rc += (total[r] - remaining[r]) * COUNT_SYSTEMS.hilo.tags[r]; });
+  const left = totalRemaining();
+  return left ? rc / Math.max(0.1, left / 52) : 0;
+}
+
+function bestOf(evs, exclude) {
+  let b = null;
+  for (const k in evs) {
+    if (exclude && exclude.includes(k)) continue;
+    if (b === null || evs[k] > evs[b]) b = k;
+  }
+  return b;
+}
+
+function trimEvs(evs, hand, isSplitHand) {
+  delete evs._dOutAvg;
+  if (hand.length === 2 && !isSplitHand && (rules.ls || rules.es)) evs.surrender = -0.5;
+  if (isSplitHand && !rules.das) delete evs.double;
+  if (isSplitHand && evs.split !== undefined && hand[0] === 'A' && !rules.rsa) delete evs.split;
+  return evs;
+}
+
+function adviseHand(hand, upcard, isSplitHand) {
+  if (hand.length < 2) return { state: 'wait' };
+  const { total } = handVal(hand);
+  if (total > 21) return { state: 'bust' };
+  if (!isSplitHand && isBlackjack(hand)) return { state: 'bj' };
+  if (total === 21) return { state: '21' };
+
+  const evs = trimEvs(computeEVs(hand, upcard, { ...remaining }), hand, isSplitHand);
+  const best = bestOf(evs);
+
+  const key = [numDecks, JSON.stringify(rules), hand.slice().sort().join('.'), upcard, isSplitHand ? 1 : 0].join('|');
+  let neutralBest = neutralCache.get(key);
+  if (!neutralBest) {
+    const neu = perRank(numDecks);
+    hand.forEach(r => { neu[r] = Math.max(0, neu[r] - 1); });
+    neu[upcard] = Math.max(0, neu[upcard] - 1);
+    neutralBest = bestOf(trimEvs(computeEVs(hand, upcard, neu), hand, isSplitHand));
+    neutralCache.set(key, neutralBest);
+  }
+  let alt = null;
+  if (best === 'double' || best === 'surrender') alt = bestOf(evs, ['double', 'surrender']);
+  const dev = best !== neutralBest && evs[neutralBest] !== undefined;
+  return { state: 'play', evs, best, neutralBest, alt, deviation: dev, gain: dev ? evs[best] - evs[neutralBest] : 0 };
+}
+
+function fmtEv(v) { return (v >= 0 ? '+' : '') + v.toFixed(3); }
+
+function renderBoxAdvisor() {
+  const panel = document.getElementById('box-adv');
+  if (!panel) return;
+  const modeEl = document.getElementById('box-adv-mode');
+  const mode = modeEl ? modeEl.value : 'always';
+  const nP = Math.min(3, getBoxes());
+  const active = [];
+  for (let n = 1; n <= nP; n++) if (boxState[n].hands.some(h => h.length)) active.push(n);
+  const tc = hiLoTC();
+  const show = active.length > 0 && mode !== 'off' && (mode === 'always' || tc >= parseFloat(mode));
+  if (!show) { panel.className = 'hidden'; panel.innerHTML = ''; return; }
+
+  const upcard = currentRoundDealerCards[0] || dealerCard || null;
+  const edge = computeExactEdge(perRank(numDecks));
+  const tcStr = (tc >= 0 ? '+' : '') + tc.toFixed(1);
+  let anyDev = false;
+  const chips = [];
+  let body = '';
+
+  // Poistka — len kým dealer ukazuje eso a ešte neodkryl ďalšiu kartu
+  if (upcard === 'A' && currentRoundDealerCards.length <= 1) {
+    const left = totalRemaining();
+    const tp = left ? remaining['10'] / left : 0;
+    const take = tp >= 1 / 3;
+    body += `<div class="ba-ins">Poistka / even money: <b class="${take ? 'take' : 'skip'}">${take ? '🛡 BRAŤ' : '✗ NEBRAŤ'}</b> (desiatky ${(tp * 100).toFixed(1)} %, hranica 33,3 %)</div>`;
+  }
+
+  active.forEach(n => {
+    const b = boxState[n];
+    const isSplit = b.hands.length > 1;
+    let handsHtml = '';
+    b.hands.forEach((h, i) => {
+      const isAct = i === b.active;
+      const name = 'P' + n + (isSplit ? String.fromCharCode(97 + i) : '');
+      const adv = upcard ? adviseHand(h, upcard, isSplit) : { state: 'noup' };
+      const hv = h.length ? handVal(h) : { total: 0, isSoft: false };
+      let actHtml = '', sub = '', devHtml = '', chipLbl = '', ctrl = '';
+
+      switch (adv.state) {
+        case 'wait': actHtml = '<span class="ba-action act-neu">…</span>'; sub = h.length ? 'čaká na 2. kartu' : 'čaká na kartu'; chipLbl = '…'; break;
+        case 'noup': actHtml = '<span class="ba-action act-neu">?</span>'; sub = 'Označ dealerovu kartu rožkom <b>D</b>'; chipLbl = '?'; break;
+        case 'bust': actHtml = '<span class="ba-action act-surrender">BUST</span>'; chipLbl = 'BUST'; break;
+        case 'bj':   actHtml = '<span class="ba-action act-stand">BJ</span>'; sub = upcard === 'A' ? 'Even money = poistka, riaď sa riadkom vyššie' : 'Blackjack'; chipLbl = 'BJ'; break;
+        case '21':   actHtml = '<span class="ba-action act-stand">STAND</span>'; sub = '21'; chipLbl = 'STAND'; break;
+        case 'play': {
+          actHtml = `<span class="ba-action act-${adv.best}">${ACT_LBL[adv.best]}</span>`;
+          chipLbl = ACT_LBL[adv.best];
+          const evList = Object.entries(adv.evs).sort((a, c) => c[1] - a[1])
+            .map(([k, v]) => `${ACT_LBL[k]} ${fmtEv(v)}`).join(' · ');
+          sub = evList;
+          if (adv.alt) sub += `<br>Ak ${adv.best === 'double' ? 'double' : 'surrender'} nie je povolený → <b>${ACT_LBL[adv.alt]}</b>`;
+          if (isSplit && h[0] === 'A') sub += '<br>Split esá: v kasíne zvyčajne len 1 karta, bez ďalšieho ťahania';
+          if (adv.deviation) {
+            anyDev = true;
+            devHtml = `<div class="ba-dev">⚡ <b>ODCHÝLKA</b> pri Hi-Lo TC ${tcStr}: <b>${ACT_LBL[adv.best]}</b> (${ACT_SK[adv.best]}) namiesto základnej <b>${ACT_LBL[adv.neutralBest]}</b> · lepšie o ${adv.gain.toFixed(3)} j./stávku</div>`;
+          }
+          break;
+        }
+      }
+
+      if (isAct && isPairHand(h) && b.hands.length < 4) {
+        const hot = adv.state === 'play' && adv.best === 'split';
+        ctrl += `<button class="ba-btn${hot ? ' hot' : ''}" onclick="splitBox(${n})">✂ Rozdeliť ${name} na 2 ruky</button>`;
+      }
+      if (isSplit && isAct && i < b.hands.length - 1) {
+        ctrl += `<button class="ba-btn" onclick="nextHand(${n})">▶ Ďalšia ruka (${'P' + n + String.fromCharCode(98 + i)})</button>`;
+      }
+
+      if (isAct) {
+        chips.push(`<span class="ba-chip${adv.deviation ? ' dev' : ''}" style="--bc:var(--p${n})"><b>${name}</b>${chipLbl}${adv.deviation ? ' ⚡' : ''}</span>`);
+      }
+
+      const totalTxt = h.length ? (hv.isSoft ? 'soft ' : '') + hv.total : '';
+      handsHtml += `<div class="ba-hand${isSplit && !isAct ? ' inactive' : ''}"${isSplit && !isAct ? ` onclick="setActiveHand(${n},${i})"` : ''}>
+        <div class="ba-row1"><span class="ba-name">${name}${isSplit && isAct ? '◀' : ''}</span><span class="ba-cards">${h.join(' ') || '—'}</span><span class="ba-total">${totalTxt}</span>${actHtml}</div>
+        ${sub ? `<div class="ba-sub">${sub}</div>` : ''}${devHtml}${ctrl ? `<div class="ba-ctrl">${ctrl}</div>` : ''}
+      </div>`;
+    });
+    body += `<div class="ba-box" style="--bc:var(--p${n})">${handsHtml}</div>`;
+  });
+
+  panel.innerHTML = `
+    <div class="ba-head">
+      <span class="ba-meta">Dealer <b>${upcard || '?'}</b> · Hi-Lo TC <b>${tcStr}</b> · edge <b>${(edge >= 0 ? '+' : '') + edge.toFixed(2)}%</b></span>
+      <button class="ba-btn" onclick="newRound()">✓ Nové kolo</button>
+      <button class="ba-btn" id="ba-toggle" onclick="toggleBoxAdv()">${advCollapsed ? '▴ Detail' : '▾ Skryť'}</button>
+      <div class="ba-chips">${chips.join('')}</div>
+    </div>
+    <div class="ba-body">${body}</div>`;
+  panel.className = (anyDev ? 'dev' : '') + (advCollapsed ? ' collapsed' : '');
+}
+
 // ── Init ─────────────────────────────────────────────────────────
 applySettings(lsGet(LS_LAST), true); // obnovit posledne nastavenia (ak existuju)
 renderProfileSelect(0);
@@ -2632,6 +3234,7 @@ updateCountPanel();
 updateDealerTagBtn();
 updateRoundCount();
 settingsReady = true;
+renderBoxAdvisor();
 saveLastSettings();
 
 // Sync rule toggles
